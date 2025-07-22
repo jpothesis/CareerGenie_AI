@@ -28,6 +28,10 @@ app.get('/', (req, res) => {
   res.send('CareerGenie API is working!');
 });
 
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Hello from backend!' });
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
