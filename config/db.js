@@ -1,4 +1,4 @@
-// config/db.js
+// Database connection configuration for MongoDB using Mongoose
 const mongoose = require('mongoose');
 
 const connectDB = async () => {

@@ -1,38 +1,29 @@
+// This is the entry point for the backend server
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const connectDB = require('./config/db');
 
+// Load environment variables
 dotenv.config();
 
+// Initialize express app
 const app = express();
-
-// Middleware
-app.use(cors({
-  origin: 'http://localhost:5173', // frontend URL
-  credentials: true
-}));
-
+app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('✅ MongoDB connected'))
-.catch((err) => console.log('❌ MongoDB connection error:', err));
+connectDB();
 
-// Basic route
+// Auth routes
+app.use('/api/auth', require('./routes/authRoutes'));
+
+// Default route
 app.get('/', (req, res) => {
-  res.send('CareerGenie API is working!');
+  res.send('API is working');
 });
 
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Hello from backend!' });
-});
-
-// Start server
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
