@@ -1,40 +1,62 @@
 import { useState } from 'react';
-import { z } from 'zod';
-import api from '../lib/axios';
-import useAuth from '../store/auth';
 
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
+const Register = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-export default function Register() {
-  const { setUser } = useAuth();
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      schema.parse(form);
-      const res = await api.post('/register', form);
-      setUser(res.data);
-    } catch (err: any) {
-      setError(err?.message || 'Something went wrong');
-    }
+    console.log('Signing up with:', { name, email, password });
+    // TODO: Connect to backend signup API
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-4 space-y-4">
-      <h2 className="text-xl font-bold">Register</h2>
-      <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="w-full p-2 border" />
-      <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Password" className="w-full p-2 border" />
-      {error && <p className="text-red-500">{error}</p>}
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Register</button>
-    </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <form
+        onSubmit={handleSignup}
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+      >
+        <h2 className="text-3xl font-semibold mb-6 text-center text-gray-800">
+          Create Account
+        </h2>
+
+        <input
+          type="text"
+          placeholder="Name"
+          className="w-full p-3 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full p-3 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full p-3 mb-6 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition duration-200"
+        >
+          Sign Up
+        </button>
+      </form>
+    </div>
   );
-}
+};
+
+export default Register;

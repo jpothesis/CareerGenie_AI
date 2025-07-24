@@ -3,13 +3,16 @@
   import About from './pages/About';
   import Login from './pages/Login';
   import Register from './pages/Register';
-  import Navbar from './components/Navbar';
+  import Header from './components/Header';
+  
 
   function App() {
     return (
       <>
-        <Navbar />
+        <Header />
         <Routes>
+          
+
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login />} />
