@@ -21,8 +21,17 @@ connectDB();
 app.use('/api/auth', require('./routes/authRoutes'));
 
 // User routes
-app.use(errorHandler);
 app.use('/api/user', userRoutes);
+
+
+// Dashboard routes
+app.use("/api/jobs", require("./routes/jobRoutes"));
+app.use("/api/assistant", require("./routes/assistantRoutes"));
+app.use("/api/resume-builder", require("./routes/resumeRoutes"));
+app.use("/api/analytics", require("./routes/analyticsRoutes"));
+
+// Error handling middleware
+app.use(errorHandler);
 
 // Default route
 app.get('/api/test', (req, res) => {
