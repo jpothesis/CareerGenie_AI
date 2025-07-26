@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const userRoutes = require('./routes/userRoutes');
+const appliedJobRoutes = require('./routes/appliedJobRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -22,7 +23,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 
 // User routes
 app.use('/api/user', userRoutes);
-
+app.use('/api/applied-jobs', appliedJobRoutes);
 
 // Dashboard routes
 app.use("/api/jobs", require("./routes/jobRoutes"));
