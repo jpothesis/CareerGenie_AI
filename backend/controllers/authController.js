@@ -12,8 +12,12 @@ const allowedDomain = 'igdtuw.ac.in';
 exports.signup = async (req, res) => {
   const { name, email, password } = req.body;
   try {
-    const emailDomain = email.split('@')[1];
-    if (emailDomain !== allowedDomain) {
+    if (!name || !email || !password) {
+      return res.status(400).json({ msg: 'Please provide name, email, and password' });
+    }
+
+    const emailParts = email.split('@');
+    if (emailParts.length !== 2 || emailParts[1] !== allowedDomain) {
       return res.status(403).json({ msg: `Only @${allowedDomain} emails are allowed to sign up` });
     }
 
@@ -31,8 +35,12 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const emailDomain = email.split('@')[1];
-    if (emailDomain !== allowedDomain) {
+    if (!email || !password) {
+      return res.status(400).json({ msg: 'Please provide email and password' });
+    }
+
+    const emailParts = email.split('@');
+    if (emailParts.length !== 2 || emailParts[1] !== allowedDomain) {
       return res.status(403).json({ msg: `Only @${allowedDomain} emails are allowed to login` });
     }
 

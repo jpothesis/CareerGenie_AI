@@ -6,7 +6,7 @@ const {
   updateAppliedJob,
   deleteAppliedJob
 } = require('../controllers/appliedJobController');
-const protect = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 router.post('/', protect, createAppliedJob);
 router.get('/', protect, getUserAppliedJobs);

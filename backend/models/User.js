@@ -7,9 +7,31 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+
+  // User profile information
+  resumeScore: { type: Number, default: 0 },          // out of 100
+  aiInterviewScore: { type: Number, default: 0 },     // rating (e.g., out of 5 or 100)
+  learningProgress: { type: Number, default: 0 },     // percentage (0–100)
+
+  deviceUsage: {
+    desktop: { type: Number, default: 0 },
+    mobile: { type: Number, default: 0 }
+  },
+
+  // Track user activities
+  activities: [
+    {
+      type: {
+        type: String,                                  // e.g., 'Resume Generated', 'Career Quiz Taken'
+        required: true
+      },
+      date: { type: Date, default: Date.now },
+      status: { type: String, default: 'Completed' }   // e.g., Completed / Pending
+    }
+  ]
 });
 
-// Add a method to the User schema to hash the password before saving
+// To hash the password before saving
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);

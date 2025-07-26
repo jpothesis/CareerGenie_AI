@@ -10,7 +10,11 @@ const appliedJob_Schema = new mongoose.Schema({
     default: 'Applied'
   },
   notes: { type: String, default: '' },
-  appliedAt: { type: Date, default: Date.now }
+  appliedAt: { type: Date, default: Date.now },
+
+  resumeScore: { type: Number, default: null },             
+  interviewFeedback: { type: String, default: '' },        
+  source: { type: String, default: '' }  
 });
 
 module.exports = mongoose.model('AppliedJob', appliedJob_Schema);
