@@ -1,14 +1,26 @@
 import { useState } from 'react';
+import api from '../lib/axios';       // Axios instance
+import useAuth from '../store/auth';  // Zustand store
 
 const Register = () => {
+  const { setUser } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Signing up with:', { name, email, password });
-    // TODO: Connect to backend signup API
+    try {
+      setError('');
+      const res = await api.post('/register', { name, email, password });
+      console.log('✅ Registered:', res.data);
+      setUser(res.data); // Save user to Zustand global store
+      // Optional: redirect using react-router-dom → navigate('/')
+    } catch (err: any) {
+      console.error('❌ Registration failed:', err);
+      setError(err.response?.data?.message || 'Signup failed');
+    }
   };
 
   return (
@@ -42,11 +54,15 @@ const Register = () => {
         <input
           type="password"
           placeholder="Password"
-          className="w-full p-3 mb-6 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full p-3 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+
+        {error && (
+          <p className="text-red-600 text-sm mb-4 text-center">{error}</p>
+        )}
 
         <button
           type="submit"
@@ -60,3 +76,4 @@ const Register = () => {
 };
 
 export default Register;
+ 
