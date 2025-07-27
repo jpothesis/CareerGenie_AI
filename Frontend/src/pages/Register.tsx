@@ -1,25 +1,35 @@
+// Register page
 import { useState } from 'react';
-import api from '../lib/axios';       // Axios instance
-import useAuth from '../store/auth';  // Zustand store
+import api from '../lib/axios';       // Axios instance (configured with baseURL & token)
+import useAuthStore from '../store/auth.js';  // Zustand store
+import { useNavigate } from 'react-router-dom'; // for redirect
 
 const Register = () => {
-  const { setUser } = useAuth();
+  const { setUser } = useAuthStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const navigate = useNavigate();
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setError('');
-      const res = await api.post('/register', { name, email, password });
-      console.log('✅ Registered:', res.data);
-      setUser(res.data); // Save user to Zustand global store
-      // Optional: redirect using react-router-dom → navigate('/')
+      // Validate inputs
+      const res = await api.post('/auth/signup', { name, email, password });
+
+      console.log('Registered:', res.data);
+
+      // Save to Zustand
+      setUser(res.data.user, res.data.token);
+
+      // Redirect to dashboard
+      navigate('/dashboard');
     } catch (err: any) {
-      console.error('❌ Registration failed:', err);
-      setError(err.response?.data?.message || 'Signup failed');
+      console.error('Registration failed:', err);
+      setError(err.response?.data?.msg || 'Signup failed');
     }
   };
 
@@ -76,4 +86,3 @@ const Register = () => {
 };
 
 export default Register;
- 
