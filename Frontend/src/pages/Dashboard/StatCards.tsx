@@ -1,32 +1,38 @@
 import { TrendingUp } from "lucide-react";
+import { useDashboard } from "../../context/DashboardContext";
 
 export const StatCards = () => {
+  const { data, loading, error } = useDashboard();
+
+  if (loading) return <p className="col-span-12 p-4">Loading stats...</p>;
+  if (error || !data) return <p className="col-span-12 p-4 text-red-500">Failed to load stats</p>;
+
   return (
     <>
       <Card
         title="Opportunities Matched"
-        value="56 Jobs"
+        value={`${data.matchedJobs} Jobs`}
         pillText="↑ 12% from last week"
         trend="up"
         period=""
       />
       <Card
         title="Resume Score"
-        value="82 / 100"
+        value={`${data.resumeScore} / 100`}
         pillText="Improve by optimizing sections"
         trend="up"
         period=""
       />
       <Card
         title="AI Interview Performance"
-        value="4.2 / 5"
+        value={`${data.interviewScore} / 5`}
         pillText="Average score last 5 attempts"
         trend="up"
         period=""
       />
       <Card
         title="Learning Progress"
-        value="68%"
+        value={`${data.learningProgress}%`}
         pillText="Completed 4 / 6 courses"
         trend="up"
         period=""

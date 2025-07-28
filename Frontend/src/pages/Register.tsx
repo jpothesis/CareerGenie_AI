@@ -1,7 +1,7 @@
 // Register page
 import { useState } from 'react';
-import api from '../lib/axios';       // Axios instance (configured with baseURL & token)
-import useAuthStore from '../store/auth.js';  // Zustand store
+import api from '../lib/axios.js';       // Axios instance (configured with baseURL & token)
+import useAuthStore from '../store/auth.ts';  // Zustand store
 import { useNavigate } from 'react-router-dom'; // for redirect
 
 const Register = () => {

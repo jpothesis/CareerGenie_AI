@@ -1,8 +1,8 @@
 // Login page component
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../lib/axios'; // Axios instance
-import useAuthStore from '../store/auth.js'; 
+import api from '../lib/axios.js'; // Axios instance
+import useAuthStore from '../store/auth'; 
 
 const Login = () => {
   const { setUser } = useAuthStore(); // Zustand store

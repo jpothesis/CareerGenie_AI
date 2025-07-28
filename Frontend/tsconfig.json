@@ -4,7 +4,21 @@
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
-    "compilerOptions": {
-      "typeRoots": ["./src/types", "./node_modules/@types"]
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "composite": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@lib/*": ["lib/*"]
     }
+  },
+  "include": ["src"]
 }

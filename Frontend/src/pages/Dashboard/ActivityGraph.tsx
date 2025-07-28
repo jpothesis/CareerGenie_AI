@@ -10,46 +10,27 @@ import {
   Line,
   LineChart,
 } from "recharts";
-
-const data = [
-  {
-    name: "Jan",
-    Returning: 275,
-    New: 41,
-  },
-  {
-    name: "Feb",
-    Returning: 620,
-    New: 96,
-  },
-  {
-    name: "Mar",
-    Returning: 202,
-    New: 192,
-  },
-  {
-    name: "Apr",
-    Returning: 500,
-    New: 50,
-  },
-  {
-    name: "May",
-    Returning: 355,
-    New: 400,
-  },
-  {
-    name: "Jun",
-    Returning: 875,
-    New: 200,
-  },
-  {
-    name: "Jul",
-    Returning: 700,
-    New: 205,
-  },
-];
+import { useDashboard } from "../../context/DashboardContext";
 
 const ActivityGraph = () => {
+  const { data, loading, error } = useDashboard();
+
+  if (loading) {
+    return (
+      <div className="col-span-8 p-4 rounded border border-stone-300 bg-white">
+        <p>Loading activity graph...</p>
+      </div>
+    );
+  }
+
+  if (error || !data || !data.activityGraph) {
+    return (
+      <div className="col-span-8 p-4 rounded border border-stone-300 bg-white">
+        <p className="text-red-500">Failed to load activity graph.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="col-span-8 overflow-hidden rounded border border-stone-300 bg-white shadow-sm">
       <div className="p-4 border-b border-stone-200">
@@ -62,7 +43,7 @@ const ActivityGraph = () => {
       <div className="h-64 px-4 py-2">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data}
+            data={data.activityGraph}
             margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
           >
             <CartesianGrid stroke="#e4e4e7" />

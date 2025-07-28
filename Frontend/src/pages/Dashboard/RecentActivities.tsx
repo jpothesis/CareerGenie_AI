@@ -2,21 +2,14 @@
 
 import React from "react";
 import { BadgeDollarSign } from "lucide-react";
-
-const activities = [
-  {
-    activity: "Generated Resume",
-    date: "2025-07-26",
-    status: "Completed",
-  },
-  {
-    activity: "Took Career Quiz",
-    date: "2025-07-25",
-    status: "Pending",
-  },
-];
+import { useDashboard } from "../../context/DashboardContext";
 
 const RecentActivities: React.FC = () => {
+  const { data, loading, error } = useDashboard();
+
+  if (loading) return <p className="col-span-12 p-4">Loading activities...</p>;
+  if (error || !data) return <p className="col-span-12 p-4 text-red-500">Failed to load activities.</p>;
+
   return (
     <div className="col-span-12 p-4 rounded border border-stone-300 bg-white">
       <div className="mb-4 flex items-center justify-between">
@@ -38,11 +31,13 @@ const RecentActivities: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {activities.map((item, index) => (
+          {data.recentActivities.map((item, index) => (
             <tr key={index} className={index % 2 === 0 ? "bg-stone-50" : ""}>
-              <td className="py-2 px-1">{item.activity}</td>
-              <td className="py-2 px-1">{item.date}</td>
-              <td className="py-2 px-1">{item.status}</td>
+              <td className="py-2 px-1">{item.description}</td>
+              <td className="py-2 px-1">
+                {new Date(item.timestamp).toLocaleDateString()}
+              </td>
+              <td className="py-2 px-1">Completed</td> {/* <-- Fixed line */}
             </tr>
           ))}
         </tbody>
