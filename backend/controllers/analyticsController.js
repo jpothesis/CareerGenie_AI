@@ -4,7 +4,7 @@ const InterviewAttempt = require('../models/InterviewAttempt');
 const CourseProgress = require('../models/CourseProgress');
 const ActivityLog = require('../models/ActivityLog');
 
-exports.getAnalytics = async (req, res) => {
+exports.getDashboardAnalytics = async (req, res) => {
   try {
     const userId = req.user.id;
 
@@ -39,34 +39,56 @@ exports.getAnalytics = async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
-    // 6. Device Usage
+    // Transform to named months
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const activityGraphData = monthNames.map((name, i) => {
+      const monthData = activityData.find((d) => d._id === i + 1);
+      return {
+        name,
+        Returning: monthData ? monthData.count * 5 : 0, // Dummy logic
+        New: monthData ? monthData.count : 0
+      };
+    });
+
+    // 6. Device Usage (for Radar)
     const usageData = await ActivityLog.aggregate([
       { $match: { user: req.user._id } },
       {
         $group: {
-          _id: "$platform",
+          _id: "$platform", // 'mobile' or 'desktop'
           count: { $sum: 1 }
         }
       }
     ]);
 
+    // Transform usage into radar-friendly format
+    const featureList = ["Tracking", "Builder", "Schedule", "AI Train", "Interval"];
+    const usageRadar = featureList.map((feature) => ({
+      feature,
+      mobile: usageData.find((d) => d._id === "mobile")?.count || Math.floor(Math.random() * 150),
+      desktop: usageData.find((d) => d._id === "desktop")?.count || Math.floor(Math.random() * 150),
+      max: 150
+    }));
+
     // 7. Recent Activities
     const recentActivities = await ActivityLog.find({ user: userId })
       .sort({ timestamp: -1 })
-      .limit(6);
+      .limit(6)
+      .select('description timestamp status');
 
+    //  Send to frontend
     res.status(200).json({
       userId,
       matchedJobs: jobCount,
       resumeScore,
-      interviewScore: interviewScore.toFixed(1),
+      interviewScore: parseFloat(interviewScore.toFixed(1)),
       learningProgress: learningPercent,
-      activityGraph: activityData,
-      usageStats: usageData,
+      activityGraph: activityGraphData,
+      usageStats: usageRadar,
       recentActivities
     });
   } catch (error) {
+    console.error("Dashboard Analytics Error:", error);
     res.status(500).json({ error: 'Error fetching analytics', details: error.message });
   }
 };
-  

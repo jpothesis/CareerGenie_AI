@@ -15,13 +15,23 @@ exports.protect = async (req, res, next) => {
 
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Attach user to request (excluding password)
       req.user = await User.findById(decoded.id).select('-password');
-      next();
+
+      if (!req.user) {
+        return res.status(401).json({ msg: 'User not found' });
+      }
+
+      return next();
     } catch (error) {
       console.error(error);
-      res.status(401).json({ msg: 'Not authorized, token failed' });
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({ msg: 'Token expired' });
+      }
+      return res.status(401).json({ msg: 'Not authorized, token failed' });
     }
-  } else {
-    res.status(401).json({ msg: 'Not authorized, no token' });
   }
+
+  return res.status(401).json({ msg: 'Not authorized, no token' });
 };
