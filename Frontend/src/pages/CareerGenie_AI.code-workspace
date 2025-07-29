@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../../../CareerGenie_AI"
+		},
+		{
+			"path": "../../.."
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
+}
