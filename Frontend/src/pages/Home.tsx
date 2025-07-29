@@ -1,10 +1,10 @@
 import { Gem, ExternalLink, ArrowRight } from 'lucide-react';
 import Spline from '@splinetool/react-spline';
-
-
-
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <main className="flex lg:mt-20 flex-col lg:flex-row items-center justify-between min-h-[calc(90vh-6rem)] px-4 lg:px-20">
       <div className="max-w-xl ml-[5%] z-10 mt-[90%] md:mt-[60%] lg:mt-0">
@@ -26,24 +26,30 @@ const Hero = () => {
         {/* Description */}
         <p className='text-base sm:text-lg tracking-wider text-gray-400 max-w-[25rem] lg:max-w-[30rem]'>
           Your AI-powered 3D career assistant for smarter decisions.<br />
-          🚀 Tech Stack: React JS • Tailwind CSS • Spline • Lucide
         </p>
 
         {/* Buttons */}
         <div className='flex gap-4 mt-12'>
-          <a className='border border-[#2a2a2a] py-2 sm:py-3 px-4 sm:px-5 rounded-full sm:text-lg text-sm font-semibold tracking-wider transition-all duration-300 hover:bg-[#1a1a1a]' href='#'>
+          {/* Documentation Link */}
+          <a
+            className='border border-[#2a2a2a] py-2 sm:py-3 px-4 sm:px-5 rounded-full sm:text-lg text-sm font-semibold tracking-wider transition-all duration-300 hover:bg-[#1a1a1a]'
+            href='#'
+          >
             DOCUMENTATION <ExternalLink size={16} className="inline ml-1" />
           </a>
 
-          <a className='border border-[#2a2a2a] py-2 sm:py-3 px-4 sm:px-5 rounded-full sm:text-lg text-sm font-semibold tracking-wider transition-all duration-300 hover:bg-[#1a1a1a] bg-gray-300 text-black hover:text-white' href='#'>
+          {/* Get Started Button - redirects to /signup */}
+          <button
+            onClick={() => navigate('/signup')}
+            className='border border-[#2a2a2a] py-2 sm:py-3 px-4 sm:px-5 rounded-full sm:text-lg text-sm font-semibold tracking-wider transition-all duration-300 hover:bg-[#1a1a1a] bg-gray-300 text-black hover:text-white'
+          >
             GET STARTED <ArrowRight size={16} className="inline ml-1" />
-          </a>
+          </button>
         </div>
       </div>
 
       {/* 3D Spline */}
-    <Spline scene="https://prod.spline.design/nGHLyynb1ukRcpu7/scene.splinecode" />
-
+      <Spline scene="https://prod.spline.design/nGHLyynb1ukRcpu7/scene.splinecode" />
     </main>
   );
 };

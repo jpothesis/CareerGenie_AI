@@ -32,7 +32,7 @@ const Assistant = () => {
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
-      console.error("❌ Assistant Error:", err);
+      console.error(" Assistant Error:", err);
       setError("Could not reach assistant. Try again.");
     } finally {
       setLoading(false);
