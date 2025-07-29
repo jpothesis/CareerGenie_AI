@@ -1,11 +1,11 @@
-// Login page component
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../lib/axios.js'; // Axios instance
-import useAuthStore from '../store/auth'; 
+import api from '../lib/axios.js';
+import useAuthStore from '../store/auth';
+import backgroundImage from '../assets/backgroundd.png'; // adjust if using Vite or CRA
 
 const Login = () => {
-  const { setUser } = useAuthStore(); // Zustand store
+  const { setUser } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,13 +16,7 @@ const Login = () => {
     try {
       setError('');
       const res = await api.post('/auth/login', { email, password });
-
-      console.log('Logged in:', res.data);
-
-      // Save user and token to Zustand + localStorage
       setUser(res.data.user, res.data.token);
-
-      // Redirect to dashboard
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Login failed:', err);
@@ -31,40 +25,45 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/60" />
+
+      {/* Login Card */}
       <form
         onSubmit={handleLogin}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+        className="relative z-10 bg-white/10 backdrop-blur-md text-white p-8 rounded-2xl shadow-lg w-full max-w-md"
       >
-        <h2 className="text-3xl font-semibold mb-6 text-center text-gray-800">
-          Login
-        </h2>
+        <h2 className="text-3xl font-bold mb-6 text-center">Login</h2>
 
         <input
           type="email"
           placeholder="Email"
-          className="w-full p-3 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="w-full px-4 py-3 mb-4 bg-black/40 border border-white/20 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
         />
 
         <input
           type="password"
           placeholder="Password"
-          className="w-full p-3 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          className="w-full px-4 py-3 mb-4 bg-black/40 border border-white/20 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
         />
 
         {error && (
-          <p className="text-red-600 text-sm mb-4 text-center">{error}</p>
+          <p className="text-red-400 text-sm mb-4 text-center">{error}</p>
         )}
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition duration-200"
+          className="w-full bg-gradient-to-r from-orange-500 to-yellow-400 text-black font-semibold py-3 rounded-lg transition hover:from-orange-400 hover:to-yellow-300"
         >
           Login
         </button>

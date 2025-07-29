@@ -37,7 +37,7 @@ const Hero = () => {
         <p className="text-base sm:text-lg tracking-wider text-gray-300 max-w-[25rem] lg:max-w-[30rem]">
           Your AI-powered 3D career assistant for smarter decisions.
           <br />
-          🚀 Tech Stack: React JS • Tailwind CSS • Spline • Lucide
+         
         </p>
 
         {/* Get Started Button - Centered */}
