@@ -5,12 +5,13 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 
 import DashboardLayout from '../layouts/Dashboardlayout';
+import ProtectedRoute from '../components/ProtectedRoute'; // ✅ Import the protection
 
 // Dashboard Pages
 import Overview from '../pages/Dashboard/Overview';
 import Jobs from '../pages/Dashboard/Jobs';
 import Resume from '../pages/Dashboard/Resume';
-import Assistant from '../pages/Dashboard/Assistant';
+import Assistant from '../components/Assistant';
 import Profile from '../pages/Dashboard/Profile';
 
 const AppRoutes = () => {
@@ -22,8 +23,15 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Dashboard Routes (Protected + Layout) */}
-      <Route path="/dashboard" element={<DashboardLayout />}>
+      {/* Protected Dashboard Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Overview />} />
         <Route path="jobs" element={<Jobs />} />
         <Route path="resume" element={<Resume />} />

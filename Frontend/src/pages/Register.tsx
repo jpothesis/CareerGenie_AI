@@ -1,7 +1,7 @@
 // Register page
 import { useState } from 'react';
 import api from '../lib/axios.js';       // Axios instance (configured with baseURL & token)
-import useAuthStore from '../store/auth.ts';  // Zustand store
+import useAuthStore from '../store/auth';  // Zustand store
 import { useNavigate } from 'react-router-dom'; // for redirect
 
 const Register = () => {
@@ -17,7 +17,6 @@ const Register = () => {
     e.preventDefault();
     try {
       setError('');
-      // Validate inputs
       const res = await api.post('/auth/signup', { name, email, password });
 
       console.log('Registered:', res.data);

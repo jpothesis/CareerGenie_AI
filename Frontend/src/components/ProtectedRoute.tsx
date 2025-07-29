@@ -1,8 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../store/auth";
+import type { ReactNode } from "react";
+import useAuthStore from "../store/auth"; // Zustand auth store
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+type ProtectedRouteProps = {
+  children: ReactNode;
+};
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { token, loadFromStorage } = useAuthStore();
   const navigate = useNavigate();
 
@@ -16,9 +21,9 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     }
   }, [token, navigate]);
 
-  if (!token) return null; // show loading spinner
+  if (!token) return null; // You can replace this with a spinner if needed
 
-  return children;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
