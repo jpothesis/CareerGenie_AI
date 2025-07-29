@@ -19,7 +19,7 @@ export const TopBar = () => {
         {/* Left Side */}
         <div>
           <p className="text-sm font-semibold text-gray-800">
-            🚀 Good morning, {userName}!
+            Hi, {userName}!
           </p>
           <p className="text-xs text-stone-500">{today}</p>
         </div>
