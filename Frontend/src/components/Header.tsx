@@ -22,9 +22,9 @@ const Navbar = () => {
         {/* Desktop Nav */}
         <nav className="hidden md:flex gap-12 items-center text-lg font-semibold tracking-wide uppercase text-white">
           <Link to="/" className="hover:text-yellow-500 transition">Home</Link>
-          <Link to="/about" className="hover:text-yellow-500 transition">Features</Link>
-          <Link to="/resources" className="hover:text-yellow-500 transition">Resources</Link>
-          <Link to="/docs" className="hover:text-yellow-500 transition">Docs</Link>
+          <Link to="/about" className="hover:text-yellow-500 transition">About</Link>
+          <Link to="/resources" className="hover:text-yellow-500 transition">Features</Link>
+          <Link to="/docs" className="hover:text-yellow-500 transition">Resources</Link>
         </nav>
 
         {/* Desktop Buttons */}
@@ -54,9 +54,9 @@ const Navbar = () => {
         <div className="md:hidden fixed top-16 left-0 right-0 bottom-0 bg-black bg-opacity-90 text-white px-6 py-6 z-40">
           <nav className="flex flex-col gap-6 text-xl font-semibold items-center justify-center h-full tracking-wide uppercase">
             <Link to="/" onClick={toggleMobileMenu} className="hover:text-yellow-400">Home</Link>
-            <Link to="/about" onClick={toggleMobileMenu} className="hover:text-yellow-400">Features</Link>
-            <Link to="/resources" onClick={toggleMobileMenu} className="hover:text-yellow-400">Resources</Link>
-            <Link to="/docs" onClick={toggleMobileMenu} className="hover:text-yellow-400">Docs</Link>
+            <Link to="/about" onClick={toggleMobileMenu} className="hover:text-yellow-400">About</Link>
+            <Link to="/resources" onClick={toggleMobileMenu} className="hover:text-yellow-400">Features</Link>
+            <Link to="/docs" onClick={toggleMobileMenu} className="hover:text-yellow-400">Resources</Link>
             <Link
               to="/login"
               onClick={toggleMobileMenu}
@@ -64,7 +64,7 @@ const Navbar = () => {
             >
               Sign In
             </Link>
-<Link
+            <Link
               to="/register"
               onClick={toggleMobileMenu}
               className="bg-gradient-to-r from-orange-500 to-yellow-400 font-semibold py-2 px-6 rounded-full hover:from-orange-400 hover:to-yellow-300 transition"
