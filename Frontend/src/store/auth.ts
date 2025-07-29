@@ -25,33 +25,40 @@ const useAuthStore = create<AuthState>((set) => ({
 
   setUser: (user, token) => {
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
     set({ user, token });
   },
-
+  
   loginUser: async (formData) => {
     const res = await login(formData);
     const { user, token } = res.data;
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
     set({ user, token });
   },
-
+  
   signupUser: async (formData) => {
     const res = await signup(formData);
     const { user, token } = res.data;
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
     set({ user, token });
   },
-
+  
   logout: () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     set({ user: null, token: null });
-  },
+  },  
 
   loadFromStorage: () => {
     const token = localStorage.getItem('token');
-    if (token) {
-      set({ token });
-    }
+    const userString = localStorage.getItem('user');
+
+    if (!token || !userString) return;
+
+    const user = JSON.parse(userString);
+    set({ token, user });
   },
 }));
 

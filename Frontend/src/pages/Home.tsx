@@ -1,9 +1,11 @@
 import { Gem, ExternalLink, ArrowRight } from 'lucide-react';
 import Spline from '@splinetool/react-spline';
 import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/auth';
 
 const Hero = () => {
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
 
   return (
     <main className="flex lg:mt-20 flex-col lg:flex-row items-center justify-between min-h-[calc(90vh-6rem)] px-4 lg:px-20">
@@ -16,6 +18,13 @@ const Hero = () => {
           </div>
         </div>
 
+        {/* Welcome back message if user is logged in */}
+        {user && (
+          <p className="text-lg font-semibold mt-4 text-gray-300">
+            Welcome back, <span className="text-white">{user.name}</span> 👋
+          </p>
+        )}
+
         {/* Main title */}
         <h1 className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-wider my-8'>
           Welcome To
@@ -25,12 +34,11 @@ const Hero = () => {
 
         {/* Description */}
         <p className='text-base sm:text-lg tracking-wider text-gray-400 max-w-[25rem] lg:max-w-[30rem]'>
-          Your AI-powered 3D career assistant for smarter decisions.<br />
+          Your AI-powered 3D career assistant for smarter decisions.
         </p>
 
         {/* Buttons */}
         <div className='flex gap-4 mt-12'>
-          {/* Documentation Link */}
           <a
             className='border border-[#2a2a2a] py-2 sm:py-3 px-4 sm:px-5 rounded-full sm:text-lg text-sm font-semibold tracking-wider transition-all duration-300 hover:bg-[#1a1a1a]'
             href='#'
@@ -38,9 +46,8 @@ const Hero = () => {
             DOCUMENTATION <ExternalLink size={16} className="inline ml-1" />
           </a>
 
-          {/* Get Started Button - redirects to /signup */}
           <button
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate('/register')}
             className='border border-[#2a2a2a] py-2 sm:py-3 px-4 sm:px-5 rounded-full sm:text-lg text-sm font-semibold tracking-wider transition-all duration-300 hover:bg-[#1a1a1a] bg-gray-300 text-black hover:text-white'
           >
             GET STARTED <ArrowRight size={16} className="inline ml-1" />

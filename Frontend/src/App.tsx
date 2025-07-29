@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Dashboard } from "./pages/Dashboard/Dashboard";
 import Sidebar from "./components/Sidebar";
@@ -8,9 +8,16 @@ import Hero from "./pages/Home";
 import About from "./pages/About";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Header";
+import useAuthStore from "./store/auth";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const loadFromStorage = useAuthStore((state) => state.loadFromStorage);
+
+  // Load auth state (user & token) from localStorage on mount
+  useEffect(() => {
+    loadFromStorage();
+  }, [loadFromStorage]);
 
   return (
     <>
@@ -73,7 +80,7 @@ function App() {
                 {/* Sidebar visible after login */}
                 <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-                {/* Dashboard content */}
+                {/* Dashboard Content */}
                 <main className="flex-1 overflow-auto p-4">
                   <Dashboard />
                 </main>

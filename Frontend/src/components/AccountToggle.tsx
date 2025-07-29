@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import useAuthStore from "../store/auth";
 
 const MyToggleIcon = ({ isOpen }: { isOpen: boolean }) => {
   return isOpen ? (
@@ -10,6 +11,7 @@ const MyToggleIcon = ({ isOpen }: { isOpen: boolean }) => {
 };
 
 export const AccountToggle = () => {
+  const { user } = useAuthStore(); // Get user from auth store
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = () => setIsOpen((prev) => !prev);
@@ -21,22 +23,19 @@ export const AccountToggle = () => {
         className="flex p-0.5 hover:bg-stone-200 rounded transition-colors relative gap-2 w-full items-center"
       >
         <img
-          src="https://api.dicebear.com/9.x/avataaars/svg"
+          src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${user?.name || "avatar"}`}
           alt="avatar"
           className="size-8 rounded shrink-0 bg-violet-500 shadow"
         />
         <div className="text-start">
-          <span className="text-sm font-bold block">Jaanvi</span>
-          <span className="text-xs block text-stone-500">jaanvich.dev</span>
+          <span className="text-sm font-bold block">{user?.name || "User"}</span>
+          <span className="text-xs block text-stone-500">{user?.email || "user@example.com"}</span>
         </div>
-        {/* Toggle Icon on the right */}
         <MyToggleIcon isOpen={isOpen} />
       </button>
 
-      {/* Optional Dropdown Content */}
       {isOpen && (
         <div className="p-2 text-sm text-stone-600">
-          {/* Your dropdown content here */}
           <p>Account Settings</p>
           <p>Logout</p>
         </div>
