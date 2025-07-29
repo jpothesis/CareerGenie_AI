@@ -1,12 +1,14 @@
+// routes/assistantRoutes.js
+
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
-const { getAssistantData, askAI } = require("../controllers/assistantController");
+const { getAssistantData } = require("../controllers/assistantController");
 
-//GET route to fetch previous assistant data
-router.get("/", protect, getAssistantData);
+// Only one route to handle assistant queries
+router.post("/ask", protect, getAssistantData);
 
-// Main POST route to handle AI queries
-router.post("/ask", protect, askAI);
+// Optional: placeholder if you want a GET version later
+// router.get("/", protect, getSomeHistoryFunction);
 
 module.exports = router;
