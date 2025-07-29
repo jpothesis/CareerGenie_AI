@@ -3,18 +3,17 @@ import { Routes, Route } from "react-router-dom";
 import { Dashboard } from "./pages/Dashboard/Dashboard";
 import Sidebar from "./components/Sidebar";
 import Login from "./pages/Login";
-import Signup from "./pages/Register";
+import Register from "./pages/Register";
 import Hero from "./pages/Home";
-import About from "./pages/About"; 
+import About from "./pages/About";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar from './components/Header';
+import Navbar from "./components/Header";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <>
-      {/* Main Routes */}
       <Routes>
         {/* Public Routes with Navbar */}
         <Route
@@ -23,6 +22,15 @@ function App() {
             <>
               <Navbar />
               <Hero />
+            </>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <>
+              <Navbar />
+              <About />
             </>
           }
         />
@@ -36,31 +44,22 @@ function App() {
           }
         />
         <Route
-          path="/signup"
+          path="/register"
           element={
             <>
               <Navbar />
-              <Signup />
-            </>
-          }
-        />
-        <Route
-          path="/about"
-          element={
-            <>
-              <Navbar />
-              <About />
+              <Register />
             </>
           }
         />
 
-        {/* Dashboard (No Navbar) */}
+        {/* Protected Dashboard Route without Navbar */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <div className="flex flex-col md:flex-row h-screen">
-                {/* Mobile Top Header */}
+                {/* Mobile Header */}
                 <div className="md:hidden p-4 flex justify-between items-center shadow">
                   <h1 className="text-xl font-bold">CareerGenie.AI</h1>
                   <button
@@ -71,7 +70,7 @@ function App() {
                   </button>
                 </div>
 
-                {/* Sidebar only after login */}
+                {/* Sidebar visible after login */}
                 <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
                 {/* Dashboard content */}
