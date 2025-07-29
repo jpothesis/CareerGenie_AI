@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     }
   }, [token, navigate]);
 
-  if (!token) return null; // Optionally: show loading spinner
+  if (!token) return null; // show loading spinner
 
   return children;
 };
