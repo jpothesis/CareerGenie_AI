@@ -1,8 +1,8 @@
-
 import { motion } from "framer-motion";
+import type { Variants } from "framer-motion"; 
 import backgroundImage from "../assets/backgroundd.png";
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: (i: number) => ({
     opacity: 1,
@@ -10,7 +10,7 @@ const fadeUp = {
     transition: {
       delay: i * 0.2,
       duration: 0.8,
-      ease: "easeOut",
+      ease: [0.25, 0.8, 0.25, 1], 
     },
   }),
 };
