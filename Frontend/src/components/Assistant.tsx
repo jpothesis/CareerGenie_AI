@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Bot, SendHorizontal } from "lucide-react";
-import api from '@lib/axios'; // axios instance
+import api from "../lib/axios"; // Make sure this path is correct
 
 interface Message {
   type: "user" | "bot";
@@ -14,6 +14,12 @@ const Assistant = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -31,8 +37,8 @@ const Assistant = () => {
         text: res.data.response || "No response received.",
       };
       setMessages((prev) => [...prev, botMessage]);
-    } catch (err) {
-      console.error(" Assistant Error:", err);
+    } catch (err: any) {
+      console.error("Assistant Error:", err);
       setError("Could not reach assistant. Try again.");
     } finally {
       setLoading(false);
@@ -44,7 +50,7 @@ const Assistant = () => {
   };
 
   return (
-    <div className="col-span-12 p-4 rounded border border-stone-300 bg-white shadow-sm flex flex-col h-[500px]">
+    <div className="col-span-12 p-4 rounded border border-stone-300 bg-white shadow-sm flex flex-col h-[500px] w-full max-w-3xl mx-auto">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between border-b pb-2">
         <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
@@ -58,9 +64,7 @@ const Assistant = () => {
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`flex ${
-              msg.type === "user" ? "justify-end" : "justify-start"
-            }`}
+            className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
               className={`max-w-xs px-4 py-2 rounded-lg text-sm ${
@@ -73,9 +77,9 @@ const Assistant = () => {
             </div>
           </div>
         ))}
-
         {loading && <p className="text-gray-400 text-sm">Assistant is typing...</p>}
         {error && <p className="text-red-500 text-sm">{error}</p>}
+        <div ref={bottomRef} />
       </div>
 
       {/* Input */}

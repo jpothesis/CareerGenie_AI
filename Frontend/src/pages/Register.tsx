@@ -17,7 +17,6 @@ const Register = () => {
     e.preventDefault();
     try {
       setError('');
-      // Validate inputs
       const res = await api.post('/auth/signup', { name, email, password });
 
       console.log('Registered:', res.data);

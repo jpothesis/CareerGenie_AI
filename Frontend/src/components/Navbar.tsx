@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
+  console.log("Navbar rendered");
   return (
-    <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+    <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center fixed top-0 left-0 w-full z-10">
       <Link to="/" className="text-xl font-semibold text-purple-600">
         CareerGenie.AI
       </Link>
