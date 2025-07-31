@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   FileText,
   Brain,
@@ -8,7 +7,11 @@ import {
   Folder,
   LucideIcon,
 } from "lucide-react";
+import "../styles/flipcard.css";
+import backgroundImage from "../assets/backgrounddd.png"; // ✅ Correct
 
+
+// Feature data
 const features = [
   {
     icon: FileText,
@@ -42,6 +45,7 @@ const features = [
   },
 ];
 
+// Flip card component
 const FeatureCard = ({
   icon: Icon,
   title,
@@ -51,26 +55,17 @@ const FeatureCard = ({
   title: string;
   description: string;
 }) => {
-  const [flipped, setFlipped] = useState(false);
-
   return (
-    <div
-      className={`w-80 h-52 perspective cursor-pointer`}
-      onClick={() => setFlipped((prev) => !prev)}
-    >
-      <div
-        className={`relative w-full h-full transition-transform duration-700 transform-style-preserve-3d ${
-          flipped ? "rotate-y-180" : ""
-        }`}
-      >
+    <div className="flip-card w-80 h-52 cursor-pointer">
+      <div className="flip-card-inner">
         {/* Front */}
-        <div className="absolute w-full h-full bg-white/10 backdrop-blur-lg border border-white/20 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center transform transition-transform">
+        <div className="flip-card-front">
           <Icon size={40} className="text-yellow-400 mb-4" />
           <h3 className="text-xl font-bold text-center">{title}</h3>
         </div>
 
         {/* Back */}
-        <div className="absolute w-full h-full bg-black/60 backdrop-blur-lg border border-white/20 text-white rounded-2xl p-6 shadow-lg transform rotate-y-180 flex items-center justify-center">
+        <div className="flip-card-back">
           <p className="text-md text-center">{description}</p>
         </div>
       </div>
@@ -78,12 +73,25 @@ const FeatureCard = ({
   );
 };
 
+// Features page
 const Features = () => {
   return (
-    <div className="min-h-screen px-4 py-20 bg-gradient-to-br from-black via-gray-900 to-neutral-900 text-white">
+    <div
+      className="min-h-screen px-4 py-20 bg-cover bg-center text-white"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundBlendMode: "overlay",
+      }}
+    >
+
       <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-16">
-        Key <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">Features</span>
+        Key{" "}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
+          Features
+        </span>
       </h1>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 place-items-center">
         {features.map((feature, i) => (
           <FeatureCard

@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import type { Variants } from "framer-motion"; 
 import backgroundImage from "../assets/backgroundd.png";
 
-// Fix: Correct ease type using cubic-bezier array instead of string
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: (i: number) => ({
@@ -11,7 +10,7 @@ const fadeUp: Variants = {
     transition: {
       delay: i * 0.2,
       duration: 0.8,
-      ease: [0.25, 0.8, 0.25, 1], // Equivalent to easeOut
+      ease: [0.25, 0.8, 0.25, 1], 
     },
   }),
 };

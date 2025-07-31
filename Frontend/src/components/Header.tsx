@@ -23,8 +23,8 @@ const Navbar = () => {
         <nav className="hidden md:flex gap-12 items-center text-lg font-semibold tracking-wide uppercase text-white">
           <Link to="/" className="hover:text-yellow-500 transition">Home</Link>
           <Link to="/about" className="hover:text-yellow-500 transition">About</Link>
-          <Link to="/resources" className="hover:text-yellow-500 transition">Features</Link>
-          <Link to="/docs" className="hover:text-yellow-500 transition">Resources</Link>
+          <Link to="/features" className="hover:text-yellow-500 transition">Features</Link>
+          <Link to="/resources" className="hover:text-yellow-500 transition">Resources</Link>
         </nav>
 
         {/* Desktop Buttons */}
@@ -55,8 +55,8 @@ const Navbar = () => {
           <nav className="flex flex-col gap-6 text-xl font-semibold items-center justify-center h-full tracking-wide uppercase">
             <Link to="/" onClick={toggleMobileMenu} className="hover:text-yellow-400">Home</Link>
             <Link to="/about" onClick={toggleMobileMenu} className="hover:text-yellow-400">About</Link>
-            <Link to="/resources" onClick={toggleMobileMenu} className="hover:text-yellow-400">Features</Link>
-            <Link to="/docs" onClick={toggleMobileMenu} className="hover:text-yellow-400">Resources</Link>
+            <Link to="/features" onClick={toggleMobileMenu} className="hover:text-yellow-400">Features</Link>
+            <Link to="/resources" onClick={toggleMobileMenu} className="hover:text-yellow-400">Resources</Link>
             <Link
               to="/login"
               onClick={toggleMobileMenu}
