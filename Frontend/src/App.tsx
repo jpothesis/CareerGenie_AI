@@ -54,7 +54,7 @@ function App() {
           }
         />
         <Route
-          path="/resources" // ✅ Added Resources route
+          path="/resources"
           element={
             <>
               <Navbar />
@@ -98,20 +98,19 @@ function App() {
                   </button>
                 </div>
 
-                  {/* Sidebar */}
-                  <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+                {/* Sidebar */}
+                <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-                  {/* Main Content */}
-                  <main className="flex-1 overflow-auto p-4">
-                    <Dashboard />
-                  </main>
-                </div>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Suspense>
-    </>
+                {/* Main Content */}
+                <main className="flex-1 overflow-auto p-4">
+                  <Dashboard />
+                </main>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </Suspense>
   );
 }
 
