@@ -1,76 +1,73 @@
-import { Menu, X } from "lucide-react"
 import { useState } from "react";
-import { Link } from 'react-router-dom';
-import 'boxicons/css/boxicons.min.css';
-import logo from '../assets/logo.png';
-import '../index.css';
+import { Link } from "react-router-dom";
+import "boxicons/css/boxicons.min.css";
+import logo from "../assets/logo.png";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
-    setMenuOpen(!menuOpen);
+    setMenuOpen((prev) => !prev);
   };
 
   return (
-    <header className="sticky top-0 z-50 py-3 backdrop-blur-lg border-b border-neutral-700/80 bg-white/30 text-black">
-      <div className="container px-4 mx-auto flex justify-between   items-center text-sm relative">
-
+    <header className="sticky top-0 z-50 py-4 px-4 lg:px-20 backdrop-blur-lg border-b border-neutral-700/80 bg-white/10 text-white">
+      <div className="flex justify-between items-center">
         {/* Logo */}
-        <div className="flex items-center">
-          <img className="h-10 w-10 mr-2" src={logo} alt="logo" />
-          <span className="text-xl tracking-tighter font-bold">CareerGenie.AI</span>
+        <div className="flex items-center gap-2">
+          <img className="h-10 w-10" src={logo} alt="logo" />
+          <span className="text-2xl font-semibold tracking-tighter text-white">CareerGenie.AI</span>
         </div>
 
-        {/* Desktop Menu */}
-        <ul className="hidden lg:flex ml-14 space-x-10 uppercase font-medium tracking-wide">
-          <li><Link to="/" className="hover:text-yellow-500 transition">Home</Link></li>
-          <li><Link to="/about" className="hover:text-yellow-500 transition">About</Link></li>
-          <li><Link to="/resources" className="hover:text-yellow-500 transition">Resources</Link></li>
-          <li><Link to="/docs" className="hover:text-yellow-500 transition">Docs</Link></li>
-        </ul>
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex gap-12 items-center text-lg font-semibold tracking-wide uppercase text-white">
+          <Link to="/" className="hover:text-yellow-500 transition">Home</Link>
+          <Link to="/about" className="hover:text-yellow-500 transition">About</Link>
+          <Link to="/resources" className="hover:text-yellow-500 transition">Features</Link>
+          <Link to="/docs" className="hover:text-yellow-500 transition">Resources</Link>
+        </nav>
 
-        {/* Sign In (Desktop Only) */}
-        <div className="hidden lg:block">
+        {/* Desktop Buttons */}
+        <div className="hidden md:flex gap-3">
           <Link
             to="/login"
             className="bg-yellow-400 text-black px-5 py-2 rounded-full font-semibold hover:bg-yellow-300 transition"
           >
             Sign In
           </Link>
-          &nbsp; / &nbsp;
           <Link
-            to="/register" className="bg-gradient-to-r font-semibold bg-orange-500 py-2 px-3 rounded-full hover:bg-orange-400 transistion"
+            to="/register"
+            className="bg-gradient-to-r font-semibold from-orange-500 to-yellow-400 py-2 px-4 rounded-full hover:from-orange-400 hover:to-yellow-300 transition"
           >
             Create an Account
           </Link>
         </div>
-        <div className="lg:hidden md:flex flex-col justify-end">
-          <button
-            onClick={toggleMobileMenu}
-            className="text-black focus:outline-none"
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-          </div>
+
+        {/* Mobile Menu Icon */}
+        <button onClick={toggleMobileMenu} className="md:hidden text-3xl p-1 z-50">
+          <i className={`bx ${menuOpen ? "bx-x" : "bx-menu"}`}></i>
+        </button>
       </div>
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="lg:hidden bg-black bg-opacity-90 px-6 py-6 absolute w-full text-center text-white">
-          <nav className="flex flex-col gap-4 text-lg font-medium">
-            <Link to="/" className="hover:text-yellow-400 transition">Home</Link>
-            <Link to="/about" className="hover:text-yellow-400 transition">About</Link>
-            <Link to="/resources" className="hover:text-yellow-400 transition">Resources</Link>
-            <Link to="/docs" className="hover:text-yellow-400 transition">Docs</Link>
+        <div className="md:hidden fixed top-16 left-0 right-0 bottom-0 bg-black bg-opacity-90 text-white px-6 py-6 z-40">
+          <nav className="flex flex-col gap-6 text-xl font-semibold items-center justify-center h-full tracking-wide uppercase">
+            <Link to="/" onClick={toggleMobileMenu} className="hover:text-yellow-400">Home</Link>
+            <Link to="/about" onClick={toggleMobileMenu} className="hover:text-yellow-400">About</Link>
+            <Link to="/resources" onClick={toggleMobileMenu} className="hover:text-yellow-400">Features</Link>
+            <Link to="/docs" onClick={toggleMobileMenu} className="hover:text-yellow-400">Resources</Link>
             <Link
               to="/login"
-              className="bg-yellow-400 text-black mt-4 py-2 rounded-full hover:bg-yellow-300 transition"
+              onClick={toggleMobileMenu}
+              className="bg-yellow-400 text-black mt-4 py-2 px-6 rounded-full hover:bg-yellow-300 transition"
             >
               Sign In
             </Link>
             <Link
-              to="/register" className="bg-gradient-to-r font-semibold bg-orange-500 py-2 px-3 rounded-full hover:bg-orange-400 transistion"
+              to="/register"
+              onClick={toggleMobileMenu}
+              className="bg-gradient-to-r from-orange-500 to-yellow-400 font-semibold py-2 px-6 rounded-full hover:from-orange-400 hover:to-yellow-300 transition"
             >
               Create an Account
             </Link>
@@ -82,4 +79,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
