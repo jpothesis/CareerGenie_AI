@@ -1,5 +1,6 @@
+/*
 const ActivityLog = require('../models/ActivityLog');
-const { OpenAI } = require('openai');
+//const { OpenAI } = require('openai');
 require('dotenv').config();
 
 const openai = new OpenAI({
@@ -64,3 +65,4 @@ exports.askAI = async (req, res) => {
     res.status(500).json({ msg: 'Failed to fetch assistant response', error: error.message });
   }
 };
+*/

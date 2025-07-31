@@ -1,8 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/authMiddleware");
-const { getResumeData } = require("../controllers/resumeController");
+const {
+  generateResumeHandler,
+  saveResume,
+  getResumeHistory,
+  downloadResumePDF,
+} = require("../controllers/resumeController");
 
-router.get("/", protect, getResumeData);
+const { protect } = require("../middleware/authMiddleware");
+
+router.post("/generate", protect, generateResumeHandler);
+router.post("/save", protect, saveResume);
+router.get("/history", protect, getResumeHistory);
+router.post("/download", protect, downloadResumePDF);
 
 module.exports = router;
