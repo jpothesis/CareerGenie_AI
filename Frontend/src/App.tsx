@@ -8,7 +8,8 @@ import useAuthStore from "./store/auth";
 // ✅ Lazy-loaded pages
 const Hero = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
-const Features = lazy(() => import("./pages/Features")); 
+const Features = lazy(() => import("./pages/Features"));
+const Resources = lazy(() => import("./pages/Resources")); // <-- New
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
@@ -24,7 +25,7 @@ function App() {
   return (
     <Suspense fallback={<div className="text-center p-10">Loading...</div>}>
       <Routes>
-        {/* Public Routes */}
+        {/* ✅ Public Routes */}
         <Route
           path="/"
           element={
@@ -44,7 +45,7 @@ function App() {
           }
         />
         <Route
-          path="/features" // <-- New route for Features page
+          path="/features"
           element={
             <>
               <Navbar />
@@ -52,7 +53,15 @@ function App() {
             </>
           }
         />
-        
+        <Route
+          path="/resources" // ✅ Added Resources route
+          element={
+            <>
+              <Navbar />
+              <Resources />
+            </>
+          }
+        />
         <Route
           path="/login"
           element={
@@ -72,7 +81,7 @@ function App() {
           }
         />
 
-        {/* Protected Route - Dashboard Layout */}
+        {/* ✅ Protected Route */}
         <Route
           path="/dashboard"
           element={

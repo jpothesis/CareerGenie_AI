@@ -7,7 +7,9 @@ import {
   Folder,
   LucideIcon,
 } from "lucide-react";
-import "../styles/flipcard.css"; // Make sure this CSS exists and is correctly written
+import "../styles/flipcard.css";
+import backgroundImage from "../assets/backgrounddd.png"; // ✅ Correct
+
 
 // Feature data
 const features = [
@@ -43,7 +45,7 @@ const features = [
   },
 ];
 
-// Flip card on hover (no click logic)
+// Flip card component
 const FeatureCard = ({
   icon: Icon,
   title,
@@ -71,10 +73,18 @@ const FeatureCard = ({
   );
 };
 
-// Main Features page
+// Features page
 const Features = () => {
   return (
-    <div className="min-h-screen px-4 py-20 bg-gradient-to-br from-black via-gray-900 to-neutral-900 text-white">
+    <div
+      className="min-h-screen px-4 py-20 bg-cover bg-center text-white"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundBlendMode: "overlay",
+      }}
+    >
+
       <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-16">
         Key{" "}
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">

@@ -16,7 +16,7 @@
 
 /* Flip on hover */
 .flip-card:hover .flip-card-inner {
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) scale(1.02);
 }
 
 /* Shared front & back styles */
@@ -37,6 +37,25 @@
   flex-direction: column;
   padding: 1.5rem;
   color: white;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Glow effect on hover */
+.flip-card:hover .flip-card-front,
+.flip-card:hover .flip-card-back {
+  box-shadow: 0 0 25px 8px rgba(255, 140, 0, 0.4);
+  border-color: rgba(255, 165, 0, 0.3);
+}
+
+/* Text glow on front */
+.flip-card-front h3,
+.flip-card-front svg {
+  transition: filter 0.3s ease;
+}
+
+.flip-card:hover .flip-card-front h3,
+.flip-card:hover .flip-card-front svg {
+  filter: drop-shadow(0 0 10px rgba(255, 165, 0, 0.8));
 }
 
 /* Front face */
