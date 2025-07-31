@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import useAuthStore from "../store/auth";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,11 @@ export const AccountToggle = () => {
   const handleLogout = () => {
     logout(); // Clear auth store
     navigate("/"); // Redirect to homepage
+  };
+
+  const handleLogout = () => {
+    localStorage.clear(); // or your custom auth clearing logic
+    navigate("/"); // redirect to homepage
   };
 
   return (
