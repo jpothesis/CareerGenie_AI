@@ -28,33 +28,44 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ open, setOpen }) => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-lg shadow-xl border overflow-hidden w-full max-w-lg"
+        className="bg-[#0a0a0a] text-white rounded-xl shadow-2xl border border-orange-500/10 w-full max-w-lg"
       >
         <Command className="w-full">
+          {/* Input */}
           <CommandInput
             value={value}
             onValueChange={setValue}
             placeholder="What do you need?"
-            className="border-b border-stone-300 p-3 text-lg w-full placeholder:text-stone-400 focus:outline-none"
+            className="border-b border-orange-500/10 bg-[#0a0a0a] text-white p-4 text-base placeholder:text-orange-300 focus:outline-none"
           />
+
+          {/* List */}
           <CommandList className="p-3 max-h-[300px] overflow-y-auto">
-            <CommandEmpty className="text-sm text-stone-500">
-              No results for <span className="text-violet-500">"{value}"</span>
+            <CommandEmpty className="text-sm text-orange-300">
+              No results for <span className="text-orange-400">"{value}"</span>
             </CommandEmpty>
 
-            <CommandGroup heading="Team" className="text-sm mb-3 text-stone-400">
-              <CommandItem className="flex items-center gap-2 p-2 text-sm text-stone-950 hover:bg-stone-200 rounded cursor-pointer transition">
+            {/* Team Section */}
+            <CommandGroup
+              heading="Team"
+              className="text-xs uppercase tracking-wide text-orange-400 px-2 mb-2"
+            >
+              <CommandItem className="flex items-center gap-2 px-3 py-2 text-sm rounded-md transition hover:bg-orange-400/10 hover:text-orange-300 cursor-pointer">
                 <Plus className="w-4 h-4" />
                 Invite Member
               </CommandItem>
-              <CommandItem className="flex items-center gap-2 p-2 text-sm text-stone-950 hover:bg-stone-200 rounded cursor-pointer transition">
+              <CommandItem className="flex items-center gap-2 px-3 py-2 text-sm rounded-md transition hover:bg-orange-400/10 hover:text-orange-300 cursor-pointer">
                 <Eye className="w-4 h-4" />
                 See Org Chart
               </CommandItem>
             </CommandGroup>
 
-            <CommandGroup heading="Integrations" className="text-sm mb-3 text-stone-400">
-              {/* Add more CommandItems here if needed */}
+            {/* Integrations Section */}
+            <CommandGroup
+              heading="Integrations"
+              className="text-xs uppercase tracking-wide text-orange-400 px-2 mt-4"
+            >
+              <p className="text-sm text-gray-500 px-3 py-2 italic">Coming soon...</p>
             </CommandGroup>
           </CommandList>
         </Command>
