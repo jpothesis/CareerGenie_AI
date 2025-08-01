@@ -9,7 +9,7 @@ import useAuthStore from "./store/auth";
 const Hero = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
 const Features = lazy(() => import("./pages/Features"));
-const Resources = lazy(() => import("./pages/Resources")); // <-- New
+const Resources = lazy(() => import("./pages/Resources"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
@@ -54,7 +54,7 @@ function App() {
           }
         />
         <Route
-          path="/resources" // ✅ Added Resources route
+          path="/resources"
           element={
             <>
               <Navbar />
@@ -81,7 +81,7 @@ function App() {
           }
         />
 
-        {/* ✅ Protected Route */}
+        {/* Protected Route */}
         <Route
           path="/dashboard"
           element={
@@ -98,20 +98,19 @@ function App() {
                   </button>
                 </div>
 
-                  {/* Sidebar */}
-                  <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+                {/* Sidebar */}
+                <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-                  {/* Main Content */}
-                  <main className="flex-1 overflow-auto p-4">
-                    <Dashboard />
-                  </main>
-                </div>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Suspense>
-    </>
+                {/* Main Content */}
+                <main className="flex-1 overflow-auto p-4">
+                  <Dashboard />
+                </main>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </Suspense>
   );
 }
 
