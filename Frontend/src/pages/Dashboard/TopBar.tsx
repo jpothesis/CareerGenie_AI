@@ -1,8 +1,11 @@
 import { Calendar } from "lucide-react";
+import { useEffect, useState } from "react";
 import useAuthStore from "../../store/auth"; // adjust the path as needed
+import { getGreeting } from "../../lib/getGreeting"; // make sure this file exists
 
 const TopBar = () => {
   const { user } = useAuthStore();
+  const [greeting, setGreeting] = useState(getGreeting());
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -13,13 +16,21 @@ const TopBar = () => {
 
   const userName = user?.name || "there";
 
+  // Update greeting every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGreeting(getGreeting());
+    }, 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="border-b px-4 mb-4 mt-2 pb-4 border-gray-800 bg-[#0a0a0a] rounded-md shadow-md shadow-orange-500/5">
       <div className="flex items-center justify-between">
         {/* Left Side */}
         <div>
           <p className="text-sm font-semibold text-white tracking-wide">
-            ✨ Good morning, {userName}!
+            {greeting}, {userName}!
           </p>
           <p className="text-xs text-gray-400">{today}</p>
         </div>

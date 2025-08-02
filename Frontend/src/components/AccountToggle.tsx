@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import useAuthStore from "../store/auth";
-import { useNavigate } from "react-router-dom";
 
 const MyToggleIcon = ({ isOpen }: { isOpen: boolean }) => {
   return isOpen ? (
@@ -13,19 +12,16 @@ const MyToggleIcon = ({ isOpen }: { isOpen: boolean }) => {
 };
 
 export const AccountToggle = () => {
-  const { user, logout } = useAuthStore(); // Get user and logout from store
+  const { user, logout } = useAuthStore(); // Get user and logout from Zustand store
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleToggle = () => setIsOpen((prev) => !prev);
-  const handleLogout = () => {
-    logout(); // Clear auth store
-    navigate("/"); // Redirect to homepage
-  };
 
   const handleLogout = () => {
-    localStorage.clear(); // or your custom auth clearing logic
-    navigate("/"); // redirect to homepage
+    logout();             // Clear Zustand store
+    localStorage.clear(); // Optional: Clear localStorage if needed
+    navigate("/");        // Redirect to homepage
   };
 
   return (
@@ -40,8 +36,12 @@ export const AccountToggle = () => {
           className="size-8 rounded-full shrink-0 bg-orange-500 shadow-md"
         />
         <div className="text-start">
-          <span className="text-sm font-semibold text-white block">{user?.name || "User"}</span>
-          <span className="text-xs text-orange-300 block">{user?.email || "user@example.com"}</span>
+          <span className="text-sm font-semibold text-white block">
+            {user?.name || "User"}
+          </span>
+          <span className="text-xs text-orange-300 block">
+            {user?.email || "user@example.com"}
+          </span>
         </div>
         <MyToggleIcon isOpen={isOpen} />
       </button>
