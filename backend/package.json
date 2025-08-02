@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/jpothesis/CareerGenie_AI#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
@@ -33,6 +34,7 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "get-stream": "^9.0.1",
+    "google-auth-library": "^10.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.4",

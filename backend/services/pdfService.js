@@ -1,3 +1,4 @@
+// services/pdfService.js
 const PDFDocument = require("pdfkit");
 const getStream = require("get-stream");
 
@@ -8,49 +9,55 @@ const generateResumePDF = async ({ name, jobTitle, sections }) => {
   doc.on("data", buffers.push.bind(buffers));
   doc.on("end", () => {});
 
-  // Header
-  doc.fontSize(20).text(name, { align: "center" });
-  doc.moveDown();
-  doc.fontSize(16).text(`Job Title: ${jobTitle}`);
+  doc.fontSize(24).text(name, { align: "center" });
+  doc.fontSize(18).text(jobTitle, { align: "center" });
   doc.moveDown();
 
   // Summary
   if (sections.summary) {
-    doc.fontSize(14).text("Summary:");
+    doc.fontSize(14).text("Summary", { underline: true });
     doc.fontSize(12).text(sections.summary);
     doc.moveDown();
   }
 
-  // Skills
-  if (sections.skills?.length) {
-    doc.fontSize(14).text("Skills:");
-    doc.fontSize(12).text(sections.skills.join(", "));
-    doc.moveDown();
-  }
-
   // Education
-  if (sections.education?.length) {
-    doc.fontSize(14).text("Education:");
-    sections.education.forEach(item => doc.fontSize(12).text(`• ${item}`));
+  if (sections.education && sections.education.length > 0) {
+    doc.fontSize(14).text("Education", { underline: true });
+    sections.education.forEach((edu) => {
+      doc.fontSize(12).text(`${edu.degree} - ${edu.institution} (${edu.year})`);
+    });
     doc.moveDown();
   }
 
   // Experience
-  if (sections.experience?.length) {
-    doc.fontSize(14).text("Experience:");
-    sections.experience.forEach(item => doc.fontSize(12).text(`• ${item}`));
+  if (sections.experience && sections.experience.length > 0) {
+    doc.fontSize(14).text("Experience", { underline: true });
+    sections.experience.forEach((exp) => {
+      doc.fontSize(12).text(`${exp.role} at ${exp.company} (${exp.duration})`);
+    });
+    doc.moveDown();
+  }
+
+  // Skills
+  if (sections.skills && sections.skills.length > 0) {
+    doc.fontSize(14).text("Skills", { underline: true });
+    doc.fontSize(12).text(sections.skills.join(", "));
     doc.moveDown();
   }
 
   // Projects
-  if (sections.projects?.length) {
-    doc.fontSize(14).text("Projects:");
-    sections.projects.forEach(item => doc.fontSize(12).text(`• ${item}`));
+  if (sections.projects && sections.projects.length > 0) {
+    doc.fontSize(14).text("Projects", { underline: true });
+    sections.projects.forEach((p) => {
+      doc.fontSize(12).text(`${p.title}: ${p.description}`);
+    });
     doc.moveDown();
   }
 
   doc.end();
-  return await getStream.buffer(doc);
+
+  const pdfBuffer = await getStream.buffer(doc);
+  return pdfBuffer;
 };
 
 module.exports = { generateResumePDF };
