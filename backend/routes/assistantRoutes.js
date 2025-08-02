@@ -1,6 +1,10 @@
+
 // routes/assistantRoutes.js
 
 const express = require("express");
+
+/*const express = require("express");
+
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 const { getAssistantData } = require("../controllers/assistantController");
@@ -11,4 +15,4 @@ router.post("/ask", protect, getAssistantData);
 // Optional: placeholder if you want a GET version later
 // router.get("/", protect, getSomeHistoryFunction);
 
-module.exports = router;
+module.exports = router;*/
