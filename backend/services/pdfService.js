@@ -1,12 +1,11 @@
-// services/pdfService.js
-const PDFDocument = require("pdfkit");
-const getStream = require("get-stream");
+import getStream from "get-stream";
+import PDFDocument from "pdfkit";
 
-const generateResumePDF = async ({ name, jobTitle, sections }) => {
+export const generateResumePDF = async ({ name, jobTitle, sections }) => {
   const doc = new PDFDocument();
-  let buffers = [];
+  const buffers = [];
 
-  doc.on("data", buffers.push.bind(buffers));
+  doc.on("data", (chunk) => buffers.push(chunk));
   doc.on("end", () => {});
 
   doc.fontSize(24).text(name, { align: "center" });
@@ -59,5 +58,3 @@ const generateResumePDF = async ({ name, jobTitle, sections }) => {
   const pdfBuffer = await getStream.buffer(doc);
   return pdfBuffer;
 };
-
-module.exports = { generateResumePDF };
