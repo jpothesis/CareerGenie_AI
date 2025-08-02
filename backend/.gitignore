@@ -1,3 +1,5 @@
 node_modules/
 .env
-backend/config/gemini-service-account.json.DS_Store
+backend/config/gemini-service-account.json
+.DS_Store
+backend/config/gemini-service-account.json
