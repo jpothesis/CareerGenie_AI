@@ -5,7 +5,7 @@ const { generateResumePDF } = require("../services/pdfService");
 // Initialize Gemini with API key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Resume using Gemini
+// Generate resume using Gemini
 const generateResumeHandler = async (req, res) => {
   try {
     const {
@@ -26,33 +26,24 @@ const generateResumeHandler = async (req, res) => {
 
     // Prompt for Gemini
     const prompt = `
-    You are a professional resume builder. Based on the following candidate information, generate a clean, ATS-friendly professional resume in **plain text only**.
-    
+    You are a professional resume builder. Based on the following candidate information, generate a clean, ATS-friendly professional resume in plain text only.
+
     The resume should include:
-    1. A brief professional summary (2–4 lines) that highlights the candidate’s strengths, skills, and overall experience.
-    2. A well-structured resume with sections for Skills, Experience, Education, and Projects.
-    3. Use standard resume formatting — no Markdown, HTML, or extra commentary.
-    
-    ---
-    
-    **Candidate Information**
-    
-    Name: ${name}  
-    Job Title: ${jobTitle}  
-    Skills: ${skills.join(", ")}  
-    Experience: ${experience.map(e => `${e.role} at ${e.company} (${e.duration})`).join("; ")}  
-    Education: ${education.map(e => `${e.degree}, ${e.institution} (${e.year})`).join("; ")}  
+    1. A brief professional summary (2–4 lines).
+    2. Structured sections: Skills, Experience, Education, Projects.
+    3. No markdown, HTML, or extra formatting.
+
+    Name: ${name}
+    Job Title: ${jobTitle}
+    Skills: ${skills.join(", ")}
+    Experience: ${experience.map(e => `${e.role} at ${e.company} (${e.duration})`).join("; ")}
+    Education: ${education.map(e => `${e.degree}, ${e.institution} (${e.year})`).join("; ")}
     Projects: ${projects.map(p => `${p.title}: ${p.description}`).join("; ")}
-    
-    ---
-    
-    Please generate only the resume in plain text.`;
-    
+    `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const resumeText = response.text();
+    const resumeText = result.response.text();
 
     // Save to DB if requested
     let savedResume = null;
@@ -63,7 +54,7 @@ const generateResumeHandler = async (req, res) => {
       });
     }
 
-    // Download PDF if requested
+    // Download as PDF (base64) if requested
     if (download) {
       const pdfBuffer = await generateResumePDF({
         name,
@@ -71,14 +62,20 @@ const generateResumeHandler = async (req, res) => {
         sections: { raw: resumeText },
       });
 
+      const base64 = pdfBuffer.toString("base64");
       const fileName = `${jobTitle.replace(/[^a-z0-9]/gi, "_")}_Resume.pdf`;
-      res.set({
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=${fileName}`,
+
+      return res.status(200).json({
+        fileName,
+        contentType: "application/pdf",
+        base64,
+        resume: resumeText,
+        saved: !!savedResume,
+        resumeId: savedResume?._id || null,
       });
-      return res.send(pdfBuffer);
     }
 
+    // Return generated resume only
     res.status(200).json({
       resume: resumeText,
       saved: !!savedResume,
@@ -109,7 +106,7 @@ const saveResume = async (req, res) => {
   }
 };
 
-// Resume history
+// Fetch resume history
 const getResumeHistory = async (req, res) => {
   try {
     const resumes = await Resume.find({ user: req.user._id }).sort({ createdAt: -1 });
@@ -119,7 +116,7 @@ const getResumeHistory = async (req, res) => {
   }
 };
 
-// Download resume PDF from saved sections
+// Download PDF from saved resume
 const downloadResumePDF = async (req, res) => {
   try {
     const { name, jobTitle, sections } = req.body;
@@ -128,13 +125,14 @@ const downloadResumePDF = async (req, res) => {
     }
 
     const pdfBuffer = await generateResumePDF({ name, jobTitle, sections });
-
+    const base64 = pdfBuffer.toString("base64");
     const fileName = `${jobTitle.replace(/[^a-z0-9]/gi, "_")}_Resume.pdf`;
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=${fileName}`,
+
+    res.status(200).json({
+      fileName,
+      contentType: "application/pdf",
+      base64,
     });
-    res.send(pdfBuffer);
   } catch (err) {
     res.status(500).json({ msg: "PDF generation failed", error: err.message });
   }

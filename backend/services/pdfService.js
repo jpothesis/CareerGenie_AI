@@ -1,12 +1,7 @@
-import getStream from "get-stream";
 import PDFDocument from "pdfkit";
 
 export const generateResumePDF = async ({ name, jobTitle, sections }) => {
   const doc = new PDFDocument();
-  const buffers = [];
-
-  doc.on("data", (chunk) => buffers.push(chunk));
-  doc.on("end", () => {});
 
   doc.fontSize(24).text(name, { align: "center" });
   doc.fontSize(18).text(jobTitle, { align: "center" });
@@ -53,16 +48,14 @@ export const generateResumePDF = async ({ name, jobTitle, sections }) => {
     doc.moveDown();
   }
 
-  doc.end();
-
-  // Correct usage
+  // Return a buffer from the stream
   const buffer = await new Promise((resolve, reject) => {
     const buffers = [];
-    doc.on("data", buffers.push.bind(buffers));
+    doc.on("data", (chunk) => buffers.push(chunk));
     doc.on("end", () => resolve(Buffer.concat(buffers)));
     doc.on("error", reject);
     doc.end();
   });
-  return buffer;
 
+  return buffer;
 };
