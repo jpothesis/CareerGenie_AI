@@ -5,10 +5,10 @@ import {
   GraduationCap,
   FlaskConical,
   Folder,
-  LucideIcon,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import "../styles/flipcard.css";
-import backgroundImage from "../assets/backgrounddd.png"; // ✅ Correct
+import backgroundImage from "../assets/backgrounddd.png";
 
 
 // Feature data

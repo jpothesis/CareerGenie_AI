@@ -19,9 +19,14 @@ export const AccountToggle = () => {
   const handleToggle = () => setIsOpen((prev) => !prev);
 
   const handleLogout = () => {
+
     logout();             // Clear Zustand store
     localStorage.clear(); // Optional: Clear localStorage if needed
     navigate("/");        // Redirect to homepage
+
+    logout(); // or localStorage.clear(); depending on your logic
+    navigate("/"); // Redirect to homepage
+
   };
 
   return (

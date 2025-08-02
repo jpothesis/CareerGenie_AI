@@ -1,17 +1,19 @@
-// /layouts/DashboardLayout.tsx
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import Topbar from "../components/Topbar";
+import TopBar from "../pages/Dashboard/TopBar";
 
 const DashboardLayout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="bg-white rounded-lg pb-4 shadow h-[200vh]">
-      <Sidebar />
-      <div className="flex-1 min-h-screen bg-[#0f172a] text-white">
-        <Topbar />
-        <div className="p-6">
-          <Outlet /> {/* This will render nested route pages */}
-        </div>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col bg-[#0f172a] text-white">
+        <TopBar setSidebarOpen={setSidebarOpen} />
+        <main className="p-6 overflow-auto">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

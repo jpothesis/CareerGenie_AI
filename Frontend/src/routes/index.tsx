@@ -4,7 +4,7 @@ import About from '../pages/About';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 
-import DashboardLayout from '../layouts/Dashboardlayout';
+import DashboardLayout from '../layouts/DashboardLayout';
 import ProtectedRoute from '../components/ProtectedRoute'; // ✅ Import the protection
 
 // Dashboard Pages

@@ -36,7 +36,7 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         isOpen ? "translate-x-0" : "-translate-x-full"
       } transition-transform duration-300 ease-in-out md:translate-x-0 shadow-lg shadow-orange-300/10`}
     >
-      {/* Mobile close button */}
+      {/* Close button for mobile */}
       <div className="md:hidden flex justify-end p-4">
         <button
           onClick={() => setIsOpen(false)}
@@ -46,12 +46,12 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         </button>
       </div>
 
-      {/* Scrollable Sidebar */}
-      <div className="overflow-y-scroll sticky top-4 h-[calc(100vh-32px-48px)] p-4 space-y-4">
+      {/* Scrollable sidebar area */}
+      <div className="overflow-y-auto sticky top-4 h-[calc(100vh-32px-48px)] p-4 space-y-4">
         <AccountToggle />
         <SearchInput />
 
-        {/* Navigation links */}
+        {/* Sidebar nav items */}
         <div className="space-y-1">
           {sidebarItems.map(({ title, icon: Icon, path }) => (
             <NavLink
@@ -61,7 +61,7 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                 `flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
                     ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-black shadow-md"
-                    : "text-stone-400 hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-400 hover:text-black hover:shadow-md hover:shadow-orange-400/40"
+                    : "text-stone-400 hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-400 hover:text-black hover:shadow-md"
                 }`
               }
             >
@@ -72,7 +72,7 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         </div>
       </div>
 
-      {/* Plan toggle bottom */}
+      {/* Plan toggle at bottom */}
       <div className="p-4 border-t border-orange-500/10">
         <Plan />
       </div>
