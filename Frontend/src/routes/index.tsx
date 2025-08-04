@@ -4,13 +4,13 @@ import About from '../pages/About';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 
-import DashboardLayout from '../layouts/DashboardLayout';
+import DashboardLayout from '../layouts/DashboardLayout.tsx';
 import ProtectedRoute from '../components/ProtectedRoute'; // ✅ Import the protection
 
 // Dashboard Pages
 import Overview from '../pages/Dashboard/Overview';
 import Jobs from '../pages/Dashboard/Jobs';
-import Resume from '../pages/Dashboard/Resume';
+import Resume from '../pages/Dashboard/ResumeBuilder';
 import Assistant from '../components/Assistant';
 import Profile from '../pages/Dashboard/Profile';
 

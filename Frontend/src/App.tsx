@@ -13,7 +13,7 @@ const Resources = lazy(() => import("./pages/Resources"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./layouts/Dashboard"));
-const DashboardLayout = lazy(() => import("./layouts/DashboardLayout"));
+const DashboardLayout = lazy(() => import("./layouts/DashboardLayout.tsx"));
 
 const ResumeBuilder = lazy(() => import("./pages/Dashboard/ResumeBuilder"));
 

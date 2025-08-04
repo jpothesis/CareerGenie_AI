@@ -1,93 +1,143 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { FileText, Upload, Download, Pencil } from "lucide-react";
+import axios from "axios";
+import { EducationForm } from "../../components/EducationForm";
+import { ProjectForm } from "../../components/ProjectForm";
+import { ExperienceForm } from "../../components/ExperienceForm";
+import { Button } from "../../components/ui/button";
+import InputField from "../../components/InputField";
+import SkillInput from "../../components/SkillInput";
+
+
+type Experience = { role: string; company: string; duration: string };
+type Education = { degree: string; institution: string; year: string };
+type Project = { title: string; description: string };
 
 const ResumeBuilder = () => {
-  const [resumeData, setResumeData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    education: "",
-    experience: "",
-    skills: "",
-    summary: "",
-  });
+  const [name, setName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [skills, setSkills] = useState<string[]>([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setResumeData({ ...resumeData, [name]: value });
-  };
+  const [experience, setExperience] = useState<Experience[]>([]);
+  const [education, setEducation] = useState<Education[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
-  const handleDownload = () => {
-    // You can integrate jsPDF or html2pdf here
-    alert("Download triggered. Implement PDF export here.");
+  const [save, setSave] = useState(false);
+  const [download, setDownload] = useState(false);
+  const [resumeText, setResumeText] = useState("");
+  const [pdfBase64, setPdfBase64] = useState("");
+  const [fileName, setFileName] = useState("");
+
+  const handleSubmit = async () => {
+    try {
+      const res = await axios.post("/api/resume/generate", {
+        name,
+        jobTitle,
+        skills,
+        experience,
+        education,
+        projects,
+        save,
+        download,
+      });
+
+      setResumeText(res.data.resume);
+      if (res.data.base64) {
+        setPdfBase64(res.data.base64);
+        setFileName(res.data.fileName);
+      }
+    } catch (err) {
+      console.error("Error generating resume:", err);
+      alert("Something went wrong.");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-stone-900 p-6 text-white">
-      <div className="max-w-4xl mx-auto">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-3xl font-bold text-orange-400 mb-6 flex items-center gap-2"
-        >
-          <FileText className="text-orange-500" /> Resume Builder
-        </motion.h1>
+    <div className="max-w-5xl mx-auto px-6 py-8 text-white">
+      <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-transparent bg-clip-text">
+        ✨ Build Your Resume
+      </h1>
 
-        <div className="grid gap-4 bg-stone-800 p-6 rounded-xl shadow-xl">
-          {[
-            { label: "Full Name", name: "name" },
-            { label: "Email", name: "email" },
-            { label: "Phone", name: "phone" },
-            { label: "Education", name: "education" },
-            { label: "Work Experience", name: "experience" },
-            { label: "Skills", name: "skills" },
-            { label: "Professional Summary", name: "summary", isTextArea: true },
-          ].map(({ label, name, isTextArea }) => (
-            <motion.div
-              key={name}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-            >
-              <label className="text-stone-300 text-sm font-semibold">{label}</label>
-              {isTextArea ? (
-                <textarea
-                  name={name}
-                  value={resumeData[name as keyof typeof resumeData]}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-2 rounded bg-stone-700 border border-stone-600 text-white resize-none"
-                  rows={4}
-                />
-              ) : (
-                <input
-                  type="text"
-                  name={name}
-                  value={resumeData[name as keyof typeof resumeData]}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-2 rounded bg-stone-700 border border-stone-600 text-white"
-                />
-              )}
-            </motion.div>
-          ))}
-
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 text-black font-bold shadow hover:bg-orange-400 transition"
-            >
-              <Download /> Download PDF
-            </button>
-
-            <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-stone-700 text-white font-semibold border border-stone-500 hover:bg-stone-600 transition"
-            >
-              <Upload /> Import Resume
-            </button>
-          </div>
-        </div>
+      {/* Input Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <InputField
+          label="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          name="fullName"
+          placeholder="Enter your full name"
+          autoComplete="name"
+        />
+        <InputField
+          label="Job Title"
+          value={jobTitle}
+          onChange={(e) => setJobTitle(e.target.value)}
+          name="jobTitle"
+          placeholder="e.g. Frontend Developer"
+          autoComplete="organization-title"
+        />
       </div>
+
+      {/* Skills */}
+      <SkillInput skills={skills} setSkills={setSkills} />
+
+      {/* Forms */}
+      <ExperienceForm setExperience={setExperience} experience={experience} />
+      <EducationForm setEducation={setEducation} education={education} />
+      <ProjectForm setProjects={setProjects} projects={projects} />
+
+      {/* Options */}
+      <div className="flex items-center gap-4 mt-6 mb-4 text-sm">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={save}
+            onChange={() => setSave(!save)}
+            className="accent-yellow-500"
+          />
+          Save to Profile
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={download}
+            onChange={() => setDownload(!download)}
+            className="accent-yellow-500"
+          />
+          Download as PDF
+        </label>
+      </div>
+
+      {/* Submit */}
+      <Button
+        onClick={handleSubmit}
+        className="w-full py-3 text-lg bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-black font-bold rounded-lg hover:opacity-90 transition"
+      >
+        🚀 Generate Resume
+      </Button>
+
+      {/* Output */}
+      {resumeText && (
+        <div className="mt-8 bg-[#111827] border border-neutral-700 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold mb-3 text-yellow-300">
+            Generated Resume
+          </h2>
+          <pre className="whitespace-pre-wrap text-sm text-neutral-100">
+            {resumeText}
+          </pre>
+        </div>
+      )}
+
+      {pdfBase64 && (
+        <div className="mt-6">
+          <a
+            href={`data:application/pdf;base64,${pdfBase64}`}
+            download={fileName}
+            className="inline-block bg-yellow-500 text-black font-semibold px-6 py-2 rounded-lg hover:bg-yellow-400 transition"
+          >
+            📥 Download PDF
+          </a>
+        </div>
+      )}
     </div>
   );
 };
