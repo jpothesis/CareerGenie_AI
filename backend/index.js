@@ -17,6 +17,7 @@ const appliedJobRoutes = require("./routes/appliedJobRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
 const jobRoutes = require("./routes/jobRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const careerAdvisorRoutes = require("./routes/careerAdvisorRoutes");
 
 // Initialize Express app
 const app = express();
@@ -38,6 +39,7 @@ app.use("/api/applied-jobs", appliedJobRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/career", careerAdvisorRoutes);
 
 // Health check/test route
 app.get("/api/test", (req, res) => {
