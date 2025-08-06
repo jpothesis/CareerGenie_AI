@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   Home,
   FileText,
@@ -30,6 +30,8 @@ const sidebarItems = [
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
+  const location = useLocation();
+
   return (
     <aside
       className={`fixed md:static top-0 left-0 h-full w-64 bg-[#121212] border-r border-orange-500/10 z-50 transform ${
@@ -53,22 +55,25 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
 
         {/* Sidebar nav items */}
         <div className="space-y-1">
-          {sidebarItems.map(({ title, icon: Icon, path }) => (
-            <NavLink
-              to={path}
-              key={path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                  isActive
+          {sidebarItems.map(({ title, icon: Icon, path }) => {
+            const isExactMatch =
+              location.pathname === path || location.pathname.startsWith(path + "/");
+
+            return (
+              <NavLink
+                to={path}
+                key={path}
+                className={`flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                  isExactMatch
                     ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-black shadow-md"
                     : "text-stone-400 hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-400 hover:text-black hover:shadow-md"
-                }`
-              }
-            >
-              <Icon className="h-5 w-5" />
-              <span>{title}</span>
-            </NavLink>
-          ))}
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span>{title}</span>
+              </NavLink>
+            );
+          })}
         </div>
       </div>
 

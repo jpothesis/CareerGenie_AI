@@ -18,8 +18,8 @@ const InputField: React.FC<InputFieldProps> = ({
   autoComplete = "on",
 }) => {
   return (
-    <div className="w-full">
-      <label className="block text-sm font-medium text-white mb-1">
+    <div className="w-full mb-6">
+      <label className="block mb-2 font-medium text-white text-sm md:text-base">
         {label}
       </label>
       <input
@@ -28,7 +28,7 @@ const InputField: React.FC<InputFieldProps> = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full px-4 py-2 rounded-md bg-[#1a1a2e] text-white placeholder-gray-400 border-2 border-transparent focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:shadow-[0_0_0_3px_rgba(234,179,8,0.5)] transition duration-200"
+        className="w-full px-4 py-2 rounded-md bg-[#1a1a2e] text-white placeholder:text-gray-400 border-2 border-transparent focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:shadow-[0_0_0_3px_rgba(234,179,8,0.5)] transition duration-200"
       />
     </div>
   );

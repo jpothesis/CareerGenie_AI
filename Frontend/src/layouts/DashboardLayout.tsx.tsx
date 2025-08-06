@@ -7,9 +7,9 @@ const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#0f0f0f] via-[#1a1a1a] to-[#0f0f0f] text-white">
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="flex-1 flex flex-col bg-[#0f172a] text-white">
+      <div className="flex-1 flex flex-col">
         <TopBar setSidebarOpen={setSidebarOpen} />
         <main className="p-6 overflow-auto">
           <Outlet />

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 type Experience = {
   role: string;
@@ -6,67 +7,62 @@ type Experience = {
   duration: string;
 };
 
-interface Props {
-  experience: Experience[];
-  setExperience: React.Dispatch<React.SetStateAction<Experience[]>>;
-}
+type Props = {
+  experiences: Experience[];
+  setExperiences: React.Dispatch<React.SetStateAction<Experience[]>>;
+};
 
-export const ExperienceForm: React.FC<Props> = ({ experience, setExperience }) => {
+export const ExperienceForm = ({ experiences, setExperiences }: Props) => {
   const [form, setForm] = useState<Experience>({
     role: "",
     company: "",
     duration: "",
   });
 
-  const add = () => {
+  const inputStyle =
+    "bg-[#1a1a2e] text-white px-4 py-2 rounded-md border-2 border-transparent " +
+    "focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 " +
+    "focus:shadow-[0_0_0_3px_rgba(234,179,8,0.5)] transition duration-200 w-full";
+
+  const handleAddExperience = () => {
     if (form.role && form.company && form.duration) {
-      setExperience([...experience, form]);
+      setExperiences([...experiences, form]);
       setForm({ role: "", company: "", duration: "" });
     }
   };
 
   return (
-    <div>
-      <label className="font-semibold block mb-1">Experience</label>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+    <div className="space-y-2">
+      <h2 className="text-white font-semibold text-lg">Experience</h2>
+      <div className="flex flex-col md:flex-row gap-4">
         <input
+          type="text"
           placeholder="Role"
           value={form.role}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setForm({ ...form, role: e.target.value })
-          }
-          className="input"
+          onChange={(e) => setForm({ ...form, role: e.target.value })}
+          className={inputStyle}
         />
         <input
+          type="text"
           placeholder="Company"
           value={form.company}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setForm({ ...form, company: e.target.value })
-          }
-          className="input"
+          onChange={(e) => setForm({ ...form, company: e.target.value })}
+          className={inputStyle}
         />
         <input
+          type="text"
           placeholder="Duration"
           value={form.duration}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setForm({ ...form, duration: e.target.value })
-          }
-          className="input"
+          onChange={(e) => setForm({ ...form, duration: e.target.value })}
+          className={inputStyle}
         />
       </div>
-      <button onClick={add} className="btn mt-2">Add</button>
-<div className="flex flex-wrap gap-2 mt-3">
-  {experience.map((e, i) => (
-    <span
-      key={i}
-      className="bg-yellow-900/60 text-yellow-300 px-3 py-1 rounded-full text-sm"
-    >
-      {e.role} @ {e.company} ({e.duration})
-    </span>
-  ))}
-</div>
-
-
+      <Button
+        onClick={handleAddExperience}
+        className="bg-gradient-to-r from-yellow-400 to-pink-500 text-white mt-2"
+      >
+        + Add Experience
+      </Button>
     </div>
   );
 };

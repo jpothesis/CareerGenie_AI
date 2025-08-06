@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 type Education = {
   degree: string;
@@ -6,19 +7,24 @@ type Education = {
   year: string;
 };
 
-interface Props {
+type Props = {
   education: Education[];
   setEducation: React.Dispatch<React.SetStateAction<Education[]>>;
-}
+};
 
-export const EducationForm: React.FC<Props> = ({ education, setEducation }) => {
+const inputStyle =
+  "bg-[#1a1a2e] text-white px-4 py-2 rounded-md border-2 border-transparent " +
+  "focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 " +
+  "focus:shadow-[0_0_0_3px_rgba(234,179,8,0.5)] transition duration-200 w-full";
+
+export const EducationForm = ({ education, setEducation }: Props) => {
   const [form, setForm] = useState<Education>({
     degree: "",
     institution: "",
     year: "",
   });
 
-  const add = () => {
+  const handleAddEducation = () => {
     if (form.degree && form.institution && form.year) {
       setEducation([...education, form]);
       setForm({ degree: "", institution: "", year: "" });
@@ -26,40 +32,37 @@ export const EducationForm: React.FC<Props> = ({ education, setEducation }) => {
   };
 
   return (
-    <div>
-      <label className="font-semibold block mb-1">Education</label>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+    <div className="space-y-2 mt-4">
+      <h2 className="text-white font-semibold text-lg">Education</h2>
+      <div className="flex flex-col md:flex-row gap-4">
         <input
+          type="text"
           placeholder="Degree"
           value={form.degree}
           onChange={(e) => setForm({ ...form, degree: e.target.value })}
-          className="input"
+          className={inputStyle}
         />
         <input
+          type="text"
           placeholder="Institution"
           value={form.institution}
           onChange={(e) => setForm({ ...form, institution: e.target.value })}
-          className="input"
+          className={inputStyle}
         />
         <input
+          type="text"
           placeholder="Year"
           value={form.year}
           onChange={(e) => setForm({ ...form, year: e.target.value })}
-          className="input"
+          className={inputStyle}
         />
       </div>
-      <button onClick={add} className="btn mt-2">Add</button>
-
-      <div className="flex flex-wrap gap-2 mt-3">
-        {education.map((ed, i) => (
-          <span
-            key={i}
-            className="bg-yellow-900/60 text-yellow-300 px-3 py-1 rounded-full text-sm"
-          >
-            {ed.degree}, {ed.institution} ({ed.year})
-          </span>
-        ))}
-      </div>
+      <Button
+        onClick={handleAddEducation}
+        className="bg-gradient-to-r from-yellow-400 to-pink-500 text-white mt-2"
+      >
+        + Add
+      </Button>
     </div>
   );
 };
