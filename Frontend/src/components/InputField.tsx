@@ -7,6 +7,7 @@ type InputFieldProps = {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   name?: string;
   autoComplete?: string;
+  required?: boolean; // ✅ ADD THIS LINE
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -16,6 +17,7 @@ const InputField: React.FC<InputFieldProps> = ({
   onChange,
   name,
   autoComplete = "on",
+  required, // ✅ ADD THIS
 }) => {
   return (
     <div className="w-full mb-6">
@@ -28,6 +30,7 @@ const InputField: React.FC<InputFieldProps> = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        required={required} // ✅ ADD THIS
         className="w-full px-4 py-2 rounded-md bg-[#1a1a2e] text-white placeholder:text-gray-400 border-2 border-transparent focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:shadow-[0_0_0_3px_rgba(234,179,8,0.5)] transition duration-200"
       />
     </div>

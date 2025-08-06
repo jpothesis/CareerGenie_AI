@@ -4,7 +4,6 @@ import Navbar from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
 import useAuthStore from "./store/auth";
 
-
 // Lazy-loaded pages
 const Hero = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
@@ -16,6 +15,7 @@ const Dashboard = lazy(() => import("./layouts/Dashboard"));
 const DashboardLayout = lazy(() => import("./layouts/DashboardLayout.tsx"));
 
 const ResumeBuilder = lazy(() => import("./pages/Dashboard/ResumeBuilder"));
+const CareerAdvisor = lazy(() => import("./pages/Dashboard/CareerAdvisor")); // ✅ Added
 
 function App() {
   const loadFromStorage = useAuthStore((state) => state.loadFromStorage);
@@ -46,6 +46,7 @@ function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="resume-builder" element={<ResumeBuilder />} />
+          <Route path="career-advisor" element={<CareerAdvisor />} /> {/* ✅ Added */}
         </Route>
       </Routes>
     </Suspense>
