@@ -1,14 +1,15 @@
 import { create } from 'zustand';
 import { signup, login } from '../services/authService';
 
-// User type
+// ------------------------
+// ✅ Types
+// ------------------------
 interface User {
   id: string;
   name: string;
   email: string;
 }
 
-// Auth state type
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -19,6 +20,9 @@ interface AuthState {
   loadFromStorage: () => void;
 }
 
+// ------------------------
+// ✅ Zustand Store
+// ------------------------
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
@@ -28,37 +32,47 @@ const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem('user', JSON.stringify(user));
     set({ user, token });
   },
-  
+
   loginUser: async (formData) => {
-    const res = await login(formData);
-    const { user, token } = res.data;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    set({ user, token });
+    try {
+      const res = await login(formData);
+      const { user, token } = res.data;
+      useAuthStore.getState().setUser(user, token);
+    } catch (err) {
+      console.error('Login error:', err);
+      throw err;
+    }
   },
-  
+
   signupUser: async (formData) => {
-    const res = await signup(formData);
-    const { user, token } = res.data;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    set({ user, token });
+    try {
+      const res = await signup(formData);
+      const { user, token } = res.data;
+      useAuthStore.getState().setUser(user, token);
+    } catch (err) {
+      console.error('Signup error:', err);
+      throw err;
+    }
   },
-  
+
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     set({ user: null, token: null });
-  },  
+  },
 
   loadFromStorage: () => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    try {
+      const token = localStorage.getItem('token');
+      const userString = localStorage.getItem('user');
 
-    if (!token || !userString) return;
-
-    const user = JSON.parse(userString);
-    set({ token, user });
+      if (token && userString) {
+        const user = JSON.parse(userString);
+        set({ token, user });
+      }
+    } catch (error) {
+      console.error('Failed to load auth from storage:', error);
+    }
   },
 }));
 

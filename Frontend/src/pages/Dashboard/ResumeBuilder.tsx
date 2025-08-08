@@ -1,16 +1,16 @@
 import { useState } from "react";
-import axios from "axios";
+import { generateResume } from "../../api/resumeApi"; // ✅ use API function
 import { EducationForm } from "../../components/EducationForm";
 import { ProjectForm } from "../../components/ProjectForm";
 import { ExperienceForm } from "../../components/ExperienceForm";
 import { Button } from "../../components/ui/button";
 import InputField from "../../components/InputField";
 import SkillInput from "../../components/SkillInput";
-import resumeBg from "../../assets/background.png"; // ✅ Import background image
+import resumeBg from "../../assets/background.png";
 
-type Experience = { role: string; company: string; duration: string };
+type Experience = { role: string; company: string; duration: string; description: string };
 type Education = { degree: string; institution: string; year: string };
-type Project = { title: string; description: string };
+type Project = { title: string; description: string; techStack: string[]; link: string };
 
 const ResumeBuilder = () => {
   const [name, setName] = useState("");
@@ -28,25 +28,30 @@ const ResumeBuilder = () => {
 
   const handleSubmit = async () => {
     try {
-      const res = await axios.post("/api/resume/generate", {
+      const summary = `Name: ${name}\nTitle: ${jobTitle}`;
+
+      // ✅ Call backend through API layer (token attached automatically)
+      const data = await generateResume({
         name,
         jobTitle,
         skills,
         experience,
         education,
         projects,
+        summary,
         save,
         download,
       });
 
-      setResumeText(res.data.resume);
-      if (res.data.base64) {
-        setPdfBase64(res.data.base64);
-        setFileName(res.data.fileName);
+      setResumeText(data.resume);
+
+      if (data.base64) {
+        setPdfBase64(data.base64);
+        setFileName(data.fileName);
       }
     } catch (err) {
       console.error("Error generating resume:", err);
-      alert("Something went wrong.");
+      alert("Something went wrong while generating resume.");
     }
   };
 
@@ -64,7 +69,6 @@ const ResumeBuilder = () => {
           ✨ Build Your Resume
         </h1>
 
-        {/* Input Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <InputField
             label="Full Name"
@@ -84,15 +88,11 @@ const ResumeBuilder = () => {
           />
         </div>
 
-        {/* Skills */}
         <SkillInput skills={skills} setSkills={setSkills} />
-
-        {/* Sections */}
         <ExperienceForm experiences={experience} setExperiences={setExperience} />
         <EducationForm education={education} setEducation={setEducation} />
         <ProjectForm projects={projects} setProjects={setProjects} />
 
-        {/* Options */}
         <div className="flex items-center gap-4 mt-6 mb-4 text-sm">
           <label className="flex items-center gap-2">
             <input
@@ -114,7 +114,6 @@ const ResumeBuilder = () => {
           </label>
         </div>
 
-        {/* Submit Button */}
         <button
           onClick={handleSubmit}
           className="w-full mt-2 py-3 text-lg bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-black font-bold rounded-lg hover:opacity-90 transition"
@@ -122,19 +121,13 @@ const ResumeBuilder = () => {
           🚀 Generate Resume
         </button>
 
-        {/* Resume Text Output */}
         {resumeText && (
           <div className="mt-8 bg-[#111827] border border-neutral-700 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-3 text-yellow-300">
-              Generated Resume
-            </h2>
-            <pre className="whitespace-pre-wrap text-sm text-neutral-100">
-              {resumeText}
-            </pre>
+            <h2 className="text-xl font-semibold mb-3 text-yellow-300">Generated Resume</h2>
+            <pre className="whitespace-pre-wrap text-sm text-neutral-100">{resumeText}</pre>
           </div>
         )}
 
-        {/* PDF Download */}
         {pdfBase64 && (
           <div className="mt-6">
             <a

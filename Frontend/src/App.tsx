@@ -15,7 +15,8 @@ const Dashboard = lazy(() => import("./layouts/Dashboard"));
 const DashboardLayout = lazy(() => import("./layouts/DashboardLayout.tsx"));
 
 const ResumeBuilder = lazy(() => import("./pages/Dashboard/ResumeBuilder"));
-const CareerAdvisor = lazy(() => import("./pages/Dashboard/CareerAdvisor")); // ✅ Added
+const CareerAdvisor = lazy(() => import("./pages/Dashboard/CareerAdvisor"));
+const JobTracker = lazy(() => import("./pages/Dashboard/JobTracker")); // ✅ Added
 
 function App() {
   const loadFromStorage = useAuthStore((state) => state.loadFromStorage);
@@ -46,7 +47,8 @@ function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="resume-builder" element={<ResumeBuilder />} />
-          <Route path="career-advisor" element={<CareerAdvisor />} /> {/* ✅ Added */}
+          <Route path="career-advisor" element={<CareerAdvisor />} />
+          <Route path="job-tracker" element={<JobTracker />} /> {/* ✅ New Route */}
         </Route>
       </Routes>
     </Suspense>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "./ui/button";
 
 type Education = {
@@ -24,36 +24,55 @@ export const EducationForm = ({ education, setEducation }: Props) => {
     year: "",
   });
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   const handleAddEducation = () => {
     if (form.degree && form.institution && form.year) {
       setEducation([...education, form]);
       setForm({ degree: "", institution: "", year: "" });
+
+      // Focus back to degree input
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddEducation();
     }
   };
 
   return (
     <div className="space-y-2 mt-4">
-      <h2 className="text-white font-semibold text-lg">Education</h2>
+      <h2 className="text-white font-semibold text-lg">🎓 Education</h2>
       <div className="flex flex-col md:flex-row gap-4">
         <input
+          ref={inputRef}
           type="text"
           placeholder="Degree"
+          aria-label="Degree"
           value={form.degree}
           onChange={(e) => setForm({ ...form, degree: e.target.value })}
+          onKeyDown={handleKeyDown}
           className={inputStyle}
         />
         <input
           type="text"
           placeholder="Institution"
+          aria-label="Institution"
           value={form.institution}
           onChange={(e) => setForm({ ...form, institution: e.target.value })}
+          onKeyDown={handleKeyDown}
           className={inputStyle}
         />
         <input
           type="text"
           placeholder="Year"
+          aria-label="Year"
           value={form.year}
           onChange={(e) => setForm({ ...form, year: e.target.value })}
+          onKeyDown={handleKeyDown}
           className={inputStyle}
         />
       </div>

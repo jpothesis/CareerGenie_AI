@@ -9,7 +9,7 @@ import ProtectedRoute from '../components/ProtectedRoute'; // ✅ Import the pro
 
 // Dashboard Pages
 import Overview from '../pages/Dashboard/Overview';
-import Jobs from '../pages/Dashboard/Jobs';
+import Jobs from '../pages/Dashboard/JobTracker';
 import Resume from '../pages/Dashboard/ResumeBuilder';
 import Assistant from '../components/Assistant';
 import Profile from '../pages/Dashboard/Profile';
