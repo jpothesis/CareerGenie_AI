@@ -1,9 +1,11 @@
-import axios, {
+import axios from 'axios';
+import type {
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
+
 
 // Create an Axios instance
 const api: AxiosInstance = axios.create({
