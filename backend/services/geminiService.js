@@ -2,16 +2,53 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const getGeminiResponse = async (prompt) => {
+/**
+ * Stream Gemini response chunk-by-chunk
+ * @param {string} prompt
+ */
+const generateTextStream = async function* (prompt) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    const reply = result.response.text();
-    return reply;
+
+    const result = await model.generateContentStream({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    for await (const chunk of result.stream) {
+      const chunkText =
+        chunk.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      if (chunkText) yield chunkText;
+    }
   } catch (error) {
-    console.error("Gemini API Error:", error.message);
-    throw new Error("Failed to get response from Gemini");
+    console.error("Gemini Streaming API Error:", error.message);
+    throw new Error("Failed to get streaming response from Gemini");
   }
 };
 
-module.exports = { getGeminiResponse };
+/**
+ * Get the full Gemini response as a string
+ * @param {string} prompt
+ * @returns {Promise<string>}
+ */
+const generateFullText = async (prompt) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const result = await model.generateContentStream({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    let fullText = "";
+    for await (const chunk of result.stream) {
+      const chunkText =
+        chunk.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      fullText += chunkText;
+    }
+    return fullText.trim();
+  } catch (error) {
+    console.error("Gemini Streaming API Error:", error.message);
+    throw new Error("Failed to get full response from Gemini");
+  }
+};
+
+module.exports = { generateTextStream, generateFullText };
