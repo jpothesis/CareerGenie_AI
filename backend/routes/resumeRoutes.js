@@ -14,5 +14,5 @@ router.post("/generate", protect, generateResumeHandler);
 router.post("/save", protect, saveResume);
 router.get("/history", protect, getResumeHistory);
 router.post("/download", protect, downloadResumePDF);
-  
+
 module.exports = router;

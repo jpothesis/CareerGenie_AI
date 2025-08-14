@@ -3,4 +3,3 @@ node_modules/
 backend/config/gemini-service-account.json
 .DS_Store
 backend/config/gemini-service-account.json
-.DS_Store
