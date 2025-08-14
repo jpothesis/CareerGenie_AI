@@ -27,7 +27,8 @@ const CareerAdvisor = () => {
     setAdvice("");
 
     try {
-      const response = await axios.post("/api/career-advice", {
+      const response = await axios.post("/api/career/advice", {
+
         ...form,
         skills: form.skills.split(",").map((skill) => skill.trim()),
         interests: form.interests.split(",").map((interest) => interest.trim()),
