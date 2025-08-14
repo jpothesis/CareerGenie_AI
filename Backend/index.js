@@ -1,39 +1,56 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-
+// Load environment variables
+const dotenv = require("dotenv");
 dotenv.config();
 
+// Core dependencies
+const express = require("express");
+const cors = require("cors");
+
+// Custom modules
+const connectDB = require("./config/db");
+const { errorHandler } = require("./middleware/errorMiddleware");
+
+// Routes
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const appliedJobRoutes = require("./routes/appliedJobRoutes");
+const resumeRoutes = require("./routes/resumeRoutes");
+const jobRoutes = require("./routes/jobRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
+const careerAdvisorRoutes = require("./routes/careerAdvisorRoutes");
+
+// Initialize Express app
 const app = express();
+
+// Connect to MongoDB
+connectDB();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // frontend URL
-  credentials: true
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  credentials: true,
 }));
-
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('✅ MongoDB connected'))
-.catch((err) => console.log('❌ MongoDB connection error:', err));
+// Mount Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/applied-jobs", appliedJobRoutes);
+app.use("/api/resume", resumeRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/career", careerAdvisorRoutes);
 
-// Basic route
-app.get('/', (req, res) => {
-  res.send('CareerGenie API is working!');
+// Health check/test route
+app.get("/api/test", (req, res) => {
+  res.status(200).json({ message: "API is working ✅" });
 });
 
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Hello from backend!' });
-});
+// Error handler
+app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
