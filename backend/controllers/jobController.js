@@ -1,65 +1,122 @@
 const Job = require("../models/Job");
 
-// Get all jobs for the logged-in user
-exports.getJobs = async (req, res) => {
+// Create a Job 
+const createJob = async (req, res) => {
   try {
-    const jobs = await Job.find({ user: req.user.id }).sort({ createdAt: -1 });
-    res.status(200).json({ message: "Jobs fetched", jobs });
-  } catch (error) {
-    res.status(500).json({ error: "Error fetching jobs", details: error.message });
-  }
-};
+    const { title, company, description, skillsRequired, location, status, notes } = req.body;
 
-// Get a single job by ID
-exports.getJobById = async (req, res) => {
-  try {
-    const job = await Job.findOne({ _id: req.params.id, user: req.user.id });
-    if (!job) return res.status(404).json({ error: "Job not found" });
-    res.status(200).json(job);
-  } catch (error) {
-    res.status(500).json({ error: "Error fetching job", details: error.message });
-  }
-};
-
-// Add a new job
-exports.addJob = async (req, res) => {
-  try {
-    const newJob = new Job({
-      ...req.body,
-      user: req.user.id,
+    const job = await Job.create({
+      user: req.user._id,
+      title,
+      company,
+      description,
+      skillsRequired,
+      location,
+      status,
+      notes
     });
-    const savedJob = await newJob.save();
-    res.status(201).json({ message: "Job added", job: savedJob });
+
+    res.status(201).json(job);
   } catch (error) {
-    res.status(400).json({ error: "Error adding job", details: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Error creating job" });
   }
 };
 
-// Update a job
-exports.updateJob = async (req, res) => {
+//  Get Jobs (Filter by Company + Status) 
+const getJobs = async (req, res) => {
   try {
-    const updatedJob = await Job.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
+    const { company, status } = req.query;
+    const filter = { user: req.user._id };
+
+    // Filter by company (case-insensitive, partial match)
+    if (company) {
+      filter.company = { $regex: company, $options: "i" };
+    }
+
+    // Filter by status (exact match)
+    if (status) {
+      filter.status = status;
+    }
+
+    const jobs = await Job.find(filter).sort({ createdAt: -1 });
+    res.json(jobs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching jobs" });
+  }
+};
+
+// Get Job by ID 
+const getJobById = async (req, res) => {
+  try {
+    const job = await Job.findOne({ _id: req.params.id, user: req.user._id });
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+    res.json(job);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching job" });
+  }
+};
+
+// Update Job
+const updateJob = async (req, res) => {
+  try {
+    const job = await Job.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
-    if (!updatedJob) return res.status(404).json({ error: "Job not found" });
-    res.status(200).json({ message: "Job updated", job: updatedJob });
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found or not authorized" });
+    }
+
+    res.json(job);
   } catch (error) {
-    res.status(400).json({ error: "Error updating job", details: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Error updating job" });
   }
 };
 
-// Delete a job
-exports.deleteJob = async (req, res) => {
+// Delete Job 
+const deleteJob = async (req, res) => {
   try {
-    const deletedJob = await Job.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user.id,
-    });
-    if (!deletedJob) return res.status(404).json({ error: "Job not found" });
-    res.status(200).json({ message: "Job deleted", job: deletedJob });
+    const job = await Job.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found or not authorized" });
+    }
+
+    res.json({ message: "Job deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: "Error deleting job", details: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Error deleting job" });
   }
+};
+
+// Get Job Stats (Optional for Dashboard) 
+const getJobStats = async (req, res) => {
+  try {
+    const stats = await Job.aggregate([
+      { $match: { user: req.user._id } },
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching job stats" });
+  }
+};
+
+module.exports = {
+  createJob,
+  getJobs,
+  getJobById,
+  updateJob,
+  deleteJob,
+  getJobStats
 };
