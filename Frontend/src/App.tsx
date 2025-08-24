@@ -26,6 +26,7 @@ const CareerAdvisor = lazy(() => import("./pages/Dashboard/CareerAdvisor"));
 const JobTracker = lazy(() => import("./pages/Dashboard/JobTracker"));
 const AIInterviews = lazy(() => import("./pages/Dashboard/AIInterviews"));
 const ProfilePage = lazy(() => import("./pages/Dashboard/ProfilePage"));
+const Learn = lazy(() => import("./pages/Dashboard/Learn"));  // ✅ added
 
 function App() {
   const loadFromStorage = useAuthStore((state) => state.loadFromStorage);
@@ -63,6 +64,7 @@ function App() {
           <Route path="job-tracker" element={<JobTracker />} />
           <Route path="ai-interviews" element={<AIInterviews />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="learn" element={<Learn />} />  {/* ✅ added */}
         </Route>
       </Routes>
     </Suspense>
