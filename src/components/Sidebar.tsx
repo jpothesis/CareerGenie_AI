@@ -46,34 +46,40 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
           ✕
         </button>
       </div>
+<div className="overflow-y-auto sticky top-4 h-[calc(100vh-32px-48px)] p-4 space-y-4 flex flex-col">
+  {/* Account Section */}
+<div className="flex flex-col items-start gap-2 mb-4">
+  <AccountToggle className="w-12 h-12" />
+  <span className="text-white font-medium truncate max-w-full">
+    Jaanvi Choudhary
+  </span>
+</div>
 
-      {/* Scrollable sidebar area */}
-      <div className="overflow-y-auto sticky top-4 h-[calc(100vh-32px-48px)] p-4 space-y-4">
-        <AccountToggle />
-        <SearchInput />
+  <SearchInput />
 
-        {/* Sidebar nav items */}
-        <div className="space-y-1">
-          {sidebarItems.map(({ title, icon: Icon, path }) => {
-            const isExactMatch =
-              location.pathname === path || location.pathname.startsWith(path + "/");
+  {/* Sidebar nav items */}
+  <div className="space-y-1 mt-2">
+    {sidebarItems.map(({ title, icon: Icon, path }) => {
+      const isExactMatch =
+        location.pathname === path || location.pathname.startsWith(path + "/");
 
-            return (
-              <NavLink
-                to={path}
-                key={path}
-                className={`flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${isExactMatch
-                    ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-black shadow-md"
-                    : "text-stone-400 hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-400 hover:text-black hover:shadow-md"
-                  }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{title}</span>
-              </NavLink>
-            );
-          })}
-        </div>
-      </div>
+      return (
+        <NavLink
+          to={path}
+          key={path}
+          className={`flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${isExactMatch
+              ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-black shadow-md"
+              : "text-stone-400 hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-400 hover:text-black hover:shadow-md"
+            }`}
+        >
+          <Icon className="h-5 w-5" />
+          <span>{title}</span>
+        </NavLink>
+      );
+    })}
+  </div>
+</div>
+
 
       {/* Plan toggle at bottom */}
       <div className="p-4 border-t border-orange-500/10">

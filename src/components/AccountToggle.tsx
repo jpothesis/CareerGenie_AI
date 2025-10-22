@@ -1,7 +1,10 @@
 import { useState } from "react";
+import type { HTMLAttributes } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import useAuthStore from "../store/auth";
+
+type AccountToggleProps = HTMLAttributes<HTMLDivElement>; // Allows passing className, style, etc.
 
 const MyToggleIcon = ({ isOpen }: { isOpen: boolean }) => {
   return isOpen ? (
@@ -11,36 +14,33 @@ const MyToggleIcon = ({ isOpen }: { isOpen: boolean }) => {
   );
 };
 
-export const AccountToggle = () => {
-  const { user, logout } = useAuthStore(); // Get user and logout from Zustand store
+export const AccountToggle = ({ className }: AccountToggleProps) => {
+  const { user, logout } = useAuthStore(); // Zustand store
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleToggle = () => setIsOpen((prev) => !prev);
 
   const handleLogout = () => {
-
-    logout();             // Clear Zustand store
-    localStorage.clear(); // Optional: Clear localStorage if needed
-    navigate("/");        // Redirect to homepage
-
-    logout(); // or localStorage.clear(); depending on your logic
+    logout(); // Clear Zustand store
+    localStorage.clear(); // Optional: clear localStorage
     navigate("/"); // Redirect to homepage
-
   };
 
   return (
-    <div className="border-b border-orange-500/10 mb-4 mt-4">
+    <div
+      className={`border-b border-orange-500/10 mb-4 mt-4 ${className || ""}`}
+    >
       <button
         onClick={handleToggle}
-        className="flex px-2 py-2 hover:bg-orange-400/10 rounded-md relative gap-3 w-full items-center transition-colors"
+        className="flex items-center gap-3 w-full px-2 py-2 hover:bg-orange-400/10 rounded-md relative transition-colors"
       >
         <img
           src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${user?.name || "avatar"}`}
           alt="avatar"
-          className="size-8 rounded-full shrink-0 bg-orange-500 shadow-md"
+          className="w-8 h-8 rounded-full shrink-0 bg-orange-500 shadow-md"
         />
-        <div className="text-start">
+        <div className="flex flex-col">
           <span className="text-sm font-semibold text-white block">
             {user?.name || "User"}
           </span>
