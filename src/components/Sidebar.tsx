@@ -51,7 +51,7 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
 <div className="flex flex-col items-start gap-2 mb-4">
   <AccountToggle className="w-12 h-12" />
   <span className="text-white font-medium truncate max-w-full">
-    Jaanvi Choudhary
+    
   </span>
 </div>
 
