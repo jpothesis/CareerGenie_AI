@@ -3,7 +3,7 @@ import axios from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api", // Change if backend URL differs
+  baseURL: "https://careergenie-ai.onrender.com/api", // Change if backend URL differs
   headers: {
     "Content-Type": "application/json",
   },

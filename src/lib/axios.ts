@@ -9,7 +9,7 @@ import type {
 
 // Create an Axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api', // ✅ Update this in prod
+  baseURL: 'https://careergenie-ai.onrender.com/api', // ✅ Update this in prod
   headers: {
     'Content-Type': 'application/json',
   },

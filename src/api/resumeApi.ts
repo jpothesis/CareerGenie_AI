@@ -3,7 +3,7 @@ import axios from "axios";
 
 // ✅ Create Axios instance with base URL
 const api = axios.create({
-  baseURL: "http://localhost:5000/api", // adjust if needed
+  baseURL: "https://careergenie-ai.onrender.com/api", // adjust if needed
 });
 
 // ✅ Automatically attach Authorization header
