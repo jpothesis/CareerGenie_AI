@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import learnBg from "../../assets/background.png";
 import { Card, CardContent } from "../../components/Card";
 import { Button } from "../../components/ui/button"; // ✅ This is inside ui
-import Progress from "../../components/ui/progress";
+import { Progress }from "../../components/ui/progress";
 
 
 type Course = {

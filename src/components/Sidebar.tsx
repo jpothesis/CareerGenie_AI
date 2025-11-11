@@ -22,7 +22,7 @@ const sidebarItems = [
   { title: "Dashboard", icon: Home, path: "/dashboard" },
   { title: "Resume Builder", icon: FileText, path: "/dashboard/resume-builder" },
   { title: "Career Advisor", icon: Brain, path: "/dashboard/career-advisor" },
-  { title: "Learn", icon: GraduationCap, path: "/dashboard/learn" },
+  
 
   { title: "AI Interviews", icon: FlaskConical, path: "/dashboard/ai-interviews" },
   { title: "Job Tracker", icon: Folder, path: "/dashboard/job-tracker" },
