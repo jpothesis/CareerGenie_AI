@@ -8,7 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // Store
 import useAuthStore from "./store/auth";
 
-// Lazy-loaded pages (all relative paths)
+// Lazy-loaded pages
 const Hero = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
 const Features = lazy(() => import("./pages/Features"));
@@ -26,13 +26,17 @@ const CareerAdvisor = lazy(() => import("./pages/Dashboard/CareerAdvisor"));
 const JobTracker = lazy(() => import("./pages/Dashboard/JobTracker"));
 const AIInterviews = lazy(() => import("./pages/Dashboard/AIInterviews"));
 const ProfilePage = lazy(() => import("./pages/Dashboard/ProfilePage"));
-const Learn = lazy(() => import("./pages/Dashboard/Learn"));  // ✅ added
+const Learn = lazy(() => import("./pages/Dashboard/Learn"));
 
 function App() {
   const loadFromStorage = useAuthStore((state) => state.loadFromStorage);
 
   useEffect(() => {
-    loadFromStorage();
+    try {
+      loadFromStorage();
+    } catch (err) {
+      console.error("Failed to load auth from storage:", err);
+    }
   }, [loadFromStorage]);
 
   return (
@@ -46,7 +50,7 @@ function App() {
         <Route path="/login" element={<><Header /><Login /></>} />
         <Route path="/register" element={<><Header /><Register /></>} />
 
-        {/* Protected Routes with Sidebar + TopBar */}
+        {/* Protected Dashboard Routes */}
         <Route
           path="/dashboard"
           element={
@@ -55,16 +59,13 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {/* Dashboard Home */}
           <Route index element={<Dashboard />} />
-
-          {/* Other Nested Routes */}
           <Route path="resume-builder" element={<ResumeBuilder />} />
           <Route path="career-advisor" element={<CareerAdvisor />} />
           <Route path="job-tracker" element={<JobTracker />} />
           <Route path="ai-interviews" element={<AIInterviews />} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="learn" element={<Learn />} />  {/* ✅ added */}
+          <Route path="learn" element={<Learn />} />
         </Route>
       </Routes>
     </Suspense>

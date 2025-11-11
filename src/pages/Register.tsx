@@ -2,7 +2,7 @@ import { useState } from 'react';
 import api from '../lib/axios.js';
 import useAuthStore from '../store/auth';
 import { useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/backgroundd.png'; // Ensure this path is correct
+import backgroundImage from '../assets/backgroundd.png';
 
 const Register = () => {
   const { setUser } = useAuthStore();
@@ -27,8 +27,8 @@ const Register = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      className="min-h-screen flex items-center justify-center relative bg-gray-900"
+      style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/60" />
@@ -67,9 +67,7 @@ const Register = () => {
           className="w-full px-4 py-3 mb-4 bg-black/40 border border-white/20 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
         />
 
-        {error && (
-          <p className="text-red-400 text-sm mb-4 text-center">{error}</p>
-        )}
+        {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>}
 
         <button
           type="submit"
