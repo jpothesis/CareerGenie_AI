@@ -1,12 +1,24 @@
 "use client";
-import React, { useState, useEffect } from "react";
-
+import React, { useState, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import html2pdf from "html2pdf.js";
 
-// NOTE: Adjusted imports for Card, Button, Input, Badge for the final component
-// Assuming these are available globally or imported correctly in a real project
-// import { Card } from "../../components/ui/card"; 
-// ...
+// 1. IMPORT TYPES from src/resume.ts
+// Assuming your path is src/pages/Dashboard/ResumeBuilder.tsx -> src/resume.ts
+import type {
+  ResumeData,
+  Experience,
+  Education,
+  Project,
+  Certification,
+} from "../../components/resume";
+
+
+// 2. IMPORT STYLED TEMPLATES from src/components/ResumeTemplates
+import TemplateModern from "../../components/ResumeTemplates/TemplateModern";
+import TemplateProfessional from "../../components/ResumeTemplates/TemplateClassic";
+import TemplateCreative from "../../components/ResumeTemplates/TemplateCreative";
+import TemplateMinimal from "../../components/ResumeTemplates/TemplateClean";
 
 import {
   FileText,
@@ -21,14 +33,44 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-// --- TYPES ---
-type Experience = { id: string; role: string; company: string; duration: string; description: string; };
-type Education = { id: string; degree: string; institution: string; year: string; gpa?: string; };
-type Project = { id: string; title: string; description: string; techStack: string[]; link: string; };
-type Certification = { id: string; title: string; issuer: string; date: string; };
-type ResumeData = { name: string; email: string; phone: string; location: string; jobTitle: string; summary: string; skills: string[]; experience: Experience[]; education: Education[]; projects: Project[]; certifications: Certification[]; languages: string[]; };
+// --- TEMPLATE COMPONENTS MAP ---
+const TEMPLATE_COMPONENTS = {
+  modern: TemplateModern,
+  professional: TemplateProfessional,
+  creative: TemplateCreative,
+  minimal: TemplateMinimal,
+};
+
+// Template Renderer Component
+interface TemplateRendererProps {
+  templateId: string;
+  data: ResumeData;
+  ref: React.Ref<HTMLDivElement>;
+}
+
+const TemplateRenderer: React.FC<TemplateRendererProps> = React.forwardRef(({
+  templateId,
+  data,
+}, ref) => {
+  const TemplateComponent = TEMPLATE_COMPONENTS[templateId as keyof typeof TEMPLATE_COMPONENTS];
+  if (!TemplateComponent) {
+    return (
+      <div ref={ref} className="bg-white p-6 text-red-500">
+        Template not found.
+      </div>
+    );
+  }
+  return (
+    <div ref={ref}>
+      <TemplateComponent data={data} />
+    </div>
+  );
+});
+TemplateRenderer.displayName = 'TemplateRenderer';
+
 
 // --- INITIAL DATA & CONSTANTS ---
+// We use the imported types here
 const INITIAL_RESUME_DATA: ResumeData = { name: "", email: "", phone: "", location: "", jobTitle: "", summary: "", skills: [], experience: [], education: [], projects: [], certifications: [], languages: [], };
 
 const TEMPLATES = [
@@ -105,7 +147,7 @@ const mockAIGeneratedData: ResumeData = {
   languages: ["English (Native)", "Hindi (Fluent)"],
 };
 
-// --- SMALL REUSABLE FIELDS ---
+// --- SMALL REUSABLE FIELDS (UNCHANGED) ---
 interface InputFieldProps { label: string; value: string; onChange: (value: string) => void; type?: string; placeholder?: string; }
 const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, type = "text", placeholder }) => (
   <div className="space-y-1">
@@ -229,13 +271,9 @@ const EducationSection: React.FC<EducationSectionProps> = ({ education, updateEd
   </div>
 );
 
-// ProjectsSection (keeps local state functions)
-interface ProjectsSectionProps { projects: Project[]; setProjects: Dispatch<SetStateAction<Project[]>>; }
-const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects, setProjects }) => {
-  const addProject = () => setProjects((prev) => [...prev, { id: Date.now().toString(), title: "", description: "", techStack: [], link: "" }]);
-  const updateProject = (id: string, field: keyof Project, value: any) => setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
-  const removeProject = (id: string) => setProjects((prev) => prev.filter((p) => p.id !== id));
-
+// Projects Section (Refactored to take all state handlers as props)
+interface ProjectsSectionProps { projects: Project[]; updateProject: (id: string, field: keyof Project, value: any) => void; removeProject: (id: string) => void; addProject: () => void; }
+const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects, updateProject, removeProject, addProject }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-200 flex items-center gap-2">
@@ -260,6 +298,7 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects, setProjects
       <button onClick={addProject} className="w-full bg-black/30 hover:bg-black/50 text-orange-400 font-medium rounded-lg p-3 flex justify-center items-center gap-2 border border-white/10 transition-colors">
         <Plus className="h-4 w-4" /> Add New Project
       </button>
+
     </div>
   );
 };
@@ -272,6 +311,9 @@ const ResumeBuilder: React.FC = () => {
   const [languageInput, setLanguageInput] = useState<string>("");
   const [preview, setPreview] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>("personal");
+
+  // Ref to target the template component for PDF conversion
+  const resumeRef = useRef<HTMLDivElement>(null);
 
   // Generic update helper for string fields
   const updateResumeField = (field: keyof Omit<ResumeData, 'experience' | 'education' | 'projects' | 'certifications' | 'skills' | 'languages'>, value: string) => {
@@ -289,7 +331,8 @@ const ResumeBuilder: React.FC = () => {
     setResume((prev) => ({ ...prev, [field]: (prev[field] as string[]).filter((_, i) => i !== index) }));
   };
 
-  const addBlock = (field: 'experience' | 'education' | 'projects' | 'certifications', newBlock: any) => {
+  // Generic add/update/remove for block-level sections (Experience, Education, Project, Certification)
+  const addBlock = (field: 'experience' | 'education' | 'projects' | 'certifications', newBlock: Partial<Experience | Education | Project | Certification>) => {
     setResume((prev) => ({ ...prev, [field]: [...(prev[field] as any[]), { ...newBlock, id: Date.now().toString() }] }));
   };
 
@@ -302,6 +345,37 @@ const ResumeBuilder: React.FC = () => {
   };
 
   const generateWithAI = () => setResume(mockAIGeneratedData);
+
+  // --- PDF DOWNLOAD LOGIC ---
+  const handleDownload = () => {
+    if (resumeRef.current) {
+      const filename = `${resume.name.replace(/\s/g, "_") || "User"}_Resume_${template}.pdf`;
+      const element = resumeRef.current;
+
+      // html2pdf configuration
+      const opt = {
+          margin: 0.5,
+          filename: filename,
+          image: {
+              type: 'jpeg' as const, // Fixed type error using 'as const'
+              quality: 0.98
+          },
+          html2canvas: {
+              scale: 2,
+              logging: true,
+              dpi: 192,
+              letterRendering: true
+          },
+          jsPDF: {
+              unit: 'in',
+              format: 'letter' as const,
+              orientation: 'portrait' as const
+          }
+      };
+
+      html2pdf().from(element).set(opt).save();
+    }
+  };
 
   const { name, email, phone, location, jobTitle, summary, skills, experience, education, projects, certifications, languages } = resume;
 
@@ -331,21 +405,37 @@ const ResumeBuilder: React.FC = () => {
       case "skills":
         return <SkillInputSection label="Key Skills" items={skills} input={skillInput} setInput={setSkillInput} addItem={() => addItem("skills", skillInput, setSkillInput)} removeItem={(i) => removeItem("skills", i)} />;
       case "experience":
-        return <ExperienceSection experience={experience} updateExperience={(id, f, v) => updateBlock("experience", id, f, v)} removeExperience={(id) => removeBlock("experience", id)} addExperience={() => addBlock("experience", { role: "", company: "", duration: "", description: "" })} />;
+        return <ExperienceSection experience={experience} updateExperience={(id, f, v) => updateBlock("experience", id, f, v)} removeExperience={(id) => removeBlock("experience", id)} addExperience={() => addBlock("experience", { role: "", company: "", duration: "", description: "" } as Experience)} />;
       case "education":
-        return <EducationSection education={education} updateEducation={(id, f, v) => updateBlock("education", id, f, v)} removeEducation={(id) => removeBlock("education", id)} addEducation={() => addBlock("education", { degree: "", institution: "", year: "", gpa: "" })} />;
+        return <EducationSection education={education} updateEducation={(id, f, v) => updateBlock("education", id, f, v)} removeEducation={(id) => removeBlock("education", id)} addEducation={() => addBlock("education", { degree: "", institution: "", year: "", gpa: "" } as Education)} />;
       case "projects":
-        return <ProjectsSection projects={projects} setProjects={(newProjects) => setResume((prev) => ({ ...prev, projects: newProjects as Project[], }))} />;
+        return (
+          <ProjectsSection
+            projects={projects}
+            updateProject={(id, f, v) => updateBlock("projects", id, f as string, v)}
+            removeProject={(id) => removeBlock("projects", id)}
+            addProject={() =>
+  addBlock("projects", {
+    id: crypto.randomUUID(), // Generates a unique ID
+    title: "",
+    description: "",
+    techStack: [],
+    link: "",
+  })
+}
+          />
+        );
       case "additional":
         return (
           <div className="space-y-6">
+            {/* Certifications Block */}
             <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-xl shadow-orange-400/20">
               <div className="p-4 border-b border-white/10">
                 <h3 className="text-orange-400 text-lg font-semibold">Certifications</h3>
               </div>
               <div className="p-4 space-y-3">
                 {certifications.map((cert) => (
-                  <div key={cert.id} className="flex gap-3 items-start border-b border-gray-700 pb-3">
+                  <div key={cert.id} className="flex gap-3 items-start border-b border-white/10 pb-3 last:border-b-0 last:pb-0">
                     <div className="flex-1 space-y-2">
                       <InputField label="Title" value={cert.title} onChange={(v) => updateBlock("certifications", cert.id, "title", v)} placeholder="e.g. Google Cloud Certified" />
                       <div className="grid grid-cols-2 gap-2">
@@ -358,12 +448,13 @@ const ResumeBuilder: React.FC = () => {
                     </button>
                   </div>
                 ))}
-                <button onClick={() => addBlock("certifications", { title: "", issuer: "", date: "" })} className="w-full bg-black/30 hover:bg-black/50 text-orange-400 font-medium rounded-lg p-3 flex justify-center items-center gap-2 border border-white/10 transition-colors mt-2">
+                <button onClick={() => addBlock("certifications", { title: "", issuer: "", date: "" } as Certification)} className="w-full bg-black/30 hover:bg-black/50 text-orange-400 font-medium rounded-lg p-3 flex justify-center items-center gap-2 border border-white/10 transition-colors mt-2">
                   <Plus className="h-4 w-4" /> Add Certification
                 </button>
               </div>
             </div>
 
+            {/* Languages Block */}
             <SkillInputSection label="Languages" items={languages} input={languageInput} setInput={setLanguageInput} addItem={() => addItem("languages", languageInput, setLanguageInput)} removeItem={(i) => removeItem("languages", i)} />
           </div>
         );
@@ -372,103 +463,6 @@ const ResumeBuilder: React.FC = () => {
     }
   };
 
-  const ResumePreview: React.FC = () => (
-    <div className={`bg-black/30 rounded-xl p-6 min-h-96 text-sm space-y-5 shadow-inner border-t-4 border-orange-500`}>
-      {name && (
-        <div className="text-center pb-3 border-b border-white/10">
-          <h2 className="text-3xl font-extrabold text-orange-400 tracking-wider uppercase">{name}</h2>
-          {jobTitle && <p className="text-lg font-medium text-gray-300 mt-1">{jobTitle}</p>}
-          {(email || phone || location) && (
-            <div className="text-gray-400 text-xs flex justify-center gap-4 mt-2">
-              {email && <span>📧 {email}</span>}
-              {phone && <span>📞 {phone}</span>}
-              {location && <span>📍 {location}</span>}
-            </div>
-          )}
-        </div>
-      )}
-
-      {summary && (
-        <div className="space-y-2">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">SUMMARY</h3>
-          <p className="text-gray-300 text-xs leading-relaxed">{summary}</p>
-        </div>
-      )}
-
-      {skills.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">KEY SKILLS</h3>
-          <p className="text-gray-300 text-xs">{skills.join(" • ")}</p>
-        </div>
-      )}
-
-      {experience.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">PROFESSIONAL EXPERIENCE</h3>
-          {experience.map((exp) => (
-            <div key={exp.id} className="text-xs space-y-1">
-              <div className="flex justify-between font-semibold">
-                <p className="text-gray-200">{exp.role} at {exp.company}</p>
-                <p className="text-gray-400">{exp.duration}</p>
-              </div>
-              <p className="text-gray-300 whitespace-pre-wrap">{exp.description}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {projects.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">PROJECTS</h3>
-          {projects.map((proj) => (
-            <div key={proj.id} className="text-xs space-y-1">
-              <p className="font-semibold text-gray-200">{proj.title} <span className="text-gray-500">({proj.techStack.join(', ')})</span></p>
-              <p className="text-gray-400 italic">Link: {proj.link}</p>
-              <p className="text-gray-300 whitespace-pre-wrap">{proj.description}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {education.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">EDUCATION</h3>
-          {education.map((edu) => (
-            <div key={edu.id} className="text-xs flex justify-between">
-              <div className="font-semibold">
-                <p className="text-gray-200">{edu.degree}</p>
-                <p className="text-gray-400">{edu.institution}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-gray-400">{edu.year}</p>
-                {edu.gpa && <p className="text-gray-500">GPA: {edu.gpa}</p>}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {(certifications.length > 0 || languages.length > 0) && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">ADDITIONAL</h3>
-          {certifications.length > 0 && (
-            <div className="text-xs">
-              <p className="font-semibold text-gray-300">Certifications:</p>
-              <ul className="list-disc ml-4 text-gray-400">
-                {certifications.map(cert => <li key={cert.id}>{cert.title} ({cert.issuer}, {cert.date})</li>)}
-              </ul>
-            </div>
-          )}
-          {languages.length > 0 && (
-            <div className="text-xs">
-              <p className="font-semibold text-gray-300">Languages:</p>
-              <p className="text-gray-400">{languages.join(" • ")}</p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <div className="min-h-screen relative text-white bg-black">
@@ -509,33 +503,43 @@ const ResumeBuilder: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {!preview && (
-            <div className="lg:col-span-2 space-y-6">
-              <div className="flex gap-1 overflow-x-auto pb-2 border-b-2 border-white/10">
+            // **IMPROVED:** Added 'h-[calc(100vh-200px)] overflow-y-auto' for better alignment with sticky preview.
+            <div className="lg:col-span-2 space-y-6 h-[calc(100vh-200px)] overflow-y-auto pr-2">
+              <div className="flex gap-1 overflow-x-auto pb-2 border-b-2 border-white/10 sticky top-0 bg-black/80 z-20 pt-1">
                 {SECTIONS.map((section) => (
                   <button key={section.id} onClick={() => setActiveSection(section.id)} className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-t-lg ${activeSection === section.id ? "text-orange-400 border-b-2 border-orange-400 bg-black/40" : "text-gray-400 hover:text-gray-300 hover:bg-black/20"}`}>
                     {section.label}
                   </button>
                 ))}
               </div>
-              {renderActiveSection()}
+              {/* Content area is now inside the scrolling container */}
+              <div className="space-y-6">
+                 {renderActiveSection()}
+              </div>
             </div>
           )}
 
           {/* Preview Column */}
           <div className={`${preview ? "lg:col-span-3" : "lg:col-span-1"}`}>
+            {/* The sticky behavior will now align better with the scrollable input panel */}
             <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 sticky top-4 shadow-xl shadow-orange-400/20">
               <div className="p-4 border-b border-white/10">
                 <div className="flex items-center gap-2 text-orange-400">
                   <FileText className="h-5 w-5" />
-                  <h4 className="font-semibold">Live Resume Preview</h4>
+                  <h4 className="font-semibold">Live Resume Preview ({template.charAt(0).toUpperCase() + template.slice(1)} Template)</h4>
                 </div>
               </div>
 
               <div className="p-6 space-y-6">
-                <ResumePreview />
+                {/* DYNAMIC TEMPLATE RENDERER */}
+                <TemplateRenderer
+                  templateId={template}
+                  data={resume}
+                  ref={resumeRef} // Attach the ref here
+                />
 
                 <div className="flex gap-2 pt-4 border-t border-white/10">
-                  <button className="flex-1 gap-2 flex items-center justify-center bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 transition-colors text-black font-semibold p-3 rounded-lg">
+                  <button onClick={handleDownload} className="flex-1 gap-2 flex items-center justify-center bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 transition-colors text-black font-semibold p-3 rounded-lg">
                     <Download className="h-4 w-4" /> Download PDF
                   </button>
                   <button className="flex-1 gap-2 flex items-center justify-center border border-white/10 hover:bg-black/50 bg-black/30 text-gray-300 font-semibold p-3 rounded-lg">
