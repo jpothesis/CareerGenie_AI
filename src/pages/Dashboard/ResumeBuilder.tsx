@@ -3,10 +3,11 @@ import React, { useState, useEffect } from "react";
 
 import type { Dispatch, SetStateAction } from "react";
 
-import { Card } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Badge } from "../../components/ui/badge";
+// NOTE: Adjusted imports for Card, Button, Input, Badge for the final component
+// Assuming these are available globally or imported correctly in a real project
+// import { Card } from "../../components/ui/card"; 
+// ...
+
 import {
   FileText,
   Plus,
@@ -21,67 +22,14 @@ import {
 } from "lucide-react";
 
 // --- TYPES ---
-type Experience = {
-  id: string;
-  role: string;
-  company: string;
-  duration: string;
-  description: string;
-};
-
-type Education = {
-  id: string;
-  degree: string;
-  institution: string;
-  year: string;
-  gpa?: string;
-};
-
-type Project = {
-  id: string;
-  title: string;
-  description: string;
-  techStack: string[];
-  link: string;
-};
-
-type Certification = {
-  id: string;
-  title: string;
-  issuer: string;
-  date: string;
-};
-
-type ResumeData = {
-  name: string;
-  email: string;
-  phone: string;
-  location: string;
-  jobTitle: string;
-  summary: string;
-  skills: string[];
-  experience: Experience[];
-  education: Education[];
-  projects: Project[];
-  certifications: Certification[];
-  languages: string[];
-};
+type Experience = { id: string; role: string; company: string; duration: string; description: string; };
+type Education = { id: string; degree: string; institution: string; year: string; gpa?: string; };
+type Project = { id: string; title: string; description: string; techStack: string[]; link: string; };
+type Certification = { id: string; title: string; issuer: string; date: string; };
+type ResumeData = { name: string; email: string; phone: string; location: string; jobTitle: string; summary: string; skills: string[]; experience: Experience[]; education: Education[]; projects: Project[]; certifications: Certification[]; languages: string[]; };
 
 // --- INITIAL DATA & CONSTANTS ---
-const INITIAL_RESUME_DATA: ResumeData = {
-  name: "",
-  email: "",
-  phone: "",
-  location: "",
-  jobTitle: "",
-  summary: "",
-  skills: [],
-  experience: [],
-  education: [],
-  projects: [],
-  certifications: [],
-  languages: [],
-};
+const INITIAL_RESUME_DATA: ResumeData = { name: "", email: "", phone: "", location: "", jobTitle: "", summary: "", skills: [], experience: [], education: [], projects: [], certifications: [], languages: [], };
 
 const TEMPLATES = [
   { id: "modern", name: "Modern 🔥", color: "from-orange-500 to-amber-500" },
@@ -158,33 +106,21 @@ const mockAIGeneratedData: ResumeData = {
 };
 
 // --- SMALL REUSABLE FIELDS ---
-interface InputFieldProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  placeholder?: string;
-}
+interface InputFieldProps { label: string; value: string; onChange: (value: string) => void; type?: string; placeholder?: string; }
 const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, type = "text", placeholder }) => (
   <div className="space-y-1">
     <label className="text-xs font-medium text-gray-400">{label}</label>
-    <Input
+    <input
       placeholder={placeholder || label}
       value={value}
       onChange={(e) => onChange((e.target as HTMLInputElement).value)}
       type={type}
-      className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-500 focus:border-orange-500 transition-colors"
+      className="w-full p-3 bg-black/30 border border-white/10 text-white placeholder:text-gray-500 rounded-lg focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
     />
   </div>
 );
 
-interface TextAreaFieldProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  rows?: number;
-}
+interface TextAreaFieldProps { label: string; value: string; onChange: (value: string) => void; placeholder?: string; rows?: number; }
 const TextAreaField: React.FC<TextAreaFieldProps> = ({ label, value, onChange, placeholder, rows = 4 }) => (
   <div className="space-y-1">
     <label className="text-xs font-medium text-gray-400">{label}</label>
@@ -193,73 +129,60 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({ label, value, onChange, p
       value={value}
       onChange={(e) => onChange(e.target.value)}
       rows={rows}
-      className="w-full p-3 bg-gray-700 border border-gray-600 text-white placeholder:text-gray-500 rounded-md resize-none focus:border-orange-500 transition-colors"
+      className="w-full p-3 bg-black/30 border border-white/10 text-white placeholder:text-gray-500 rounded-lg resize-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
     />
   </div>
 );
 
 // Skill input section
-interface SkillInputSectionProps {
-  label: string;
-  items: string[];
-  setInput: Dispatch<SetStateAction<string>>;
-  input: string;
-  addItem: () => void;
-  removeItem: (index: number) => void;
-}
+interface SkillInputSectionProps { label: string; items: string[]; setInput: Dispatch<SetStateAction<string>>; input: string; addItem: () => void; removeItem: (index: number) => void; }
 const SkillInputSection: React.FC<SkillInputSectionProps> = ({ label, items, setInput, input, addItem, removeItem }) => (
-  <Card>
-    <div className="p-4 border-b border-gray-700">
+  <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-xl shadow-orange-400/20">
+    <div className="p-4 border-b border-white/10">
       <h3 className="text-orange-400 text-lg font-semibold">{label}</h3>
     </div>
-    <div className="p-4 space-y-4 bg-gray-800 border border-gray-700">
+    <div className="p-4 space-y-4">
       <div className="flex gap-2">
-        <Input
+        <input
           placeholder={`Add a ${label.toLowerCase().slice(0, -1)}`}
           value={input}
           onChange={(e) => setInput((e.target as HTMLInputElement).value)}
           onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && addItem()}
-          className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-500"
+          className="w-full p-3 bg-black/30 border border-white/10 text-white placeholder:text-gray-500 rounded-lg"
         />
-        <Button onClick={addItem} className="bg-orange-500 hover:bg-orange-600 p-2">
+        <button onClick={addItem} className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black font-bold rounded-lg p-3">
           <Plus className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
       <div className="flex flex-wrap gap-2 min-h-[30px]">
         {items.map((item, index) => (
-          <Badge
+          <span
             key={index}
-            className="bg-orange-500 hover:bg-orange-600 cursor-pointer gap-2 transition-transform duration-150 ease-out hover:scale-[1.02]"
-            // assume your Badge forwards onClick
+            className="inline-flex items-center bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full text-xs font-medium cursor-pointer gap-2 border border-orange-500/50 transition-transform duration-150 ease-out hover:scale-[1.02]"
             onClick={() => removeItem(index)}
           >
-            {item} <Trash2 className="h-3 w-3" />
-          </Badge>
+            {item} <Trash2 className="h-3 w-3 text-red-400 hover:text-red-300" />
+          </span>
         ))}
       </div>
     </div>
-  </Card>
+  </div>
 );
 
 // Experience section (simplified props)
-interface ExperienceSectionProps {
-  experience: Experience[];
-  updateExperience: (id: string, field: string, value: string) => void;
-  removeExperience: (id: string) => void;
-  addExperience: () => void;
-}
+interface ExperienceSectionProps { experience: Experience[]; updateExperience: (id: string, field: string, value: string) => void; removeExperience: (id: string) => void; addExperience: () => void; }
 const ExperienceSection: React.FC<ExperienceSectionProps> = ({ experience, updateExperience, removeExperience, addExperience }) => (
   <div className="space-y-4">
     <h3 className="text-xl font-semibold text-gray-200 flex items-center gap-2">
       <Briefcase className="h-5 w-5 text-orange-400" /> Work Experience
     </h3>
     {experience.map((exp, idx) => (
-      <Card key={exp.id} className="bg-gray-800 border-gray-700 p-4">
+      <div key={exp.id} className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 p-4">
         <div className="flex justify-between items-start mb-4">
           <p className="text-sm font-semibold text-orange-400">Entry #{idx + 1}</p>
-          <Button onClick={() => removeExperience(exp.id)} className="text-red-400 p-2 bg-transparent hover:bg-gray-700">
+          <button onClick={() => removeExperience(exp.id)} className="text-red-400 p-2 bg-transparent hover:bg-white/10 rounded-lg transition-colors">
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
         <div className="space-y-3">
           <InputField label="Job Title" value={exp.role} onChange={(v) => updateExperience(exp.id, "role", v)} placeholder="e.g. Senior Software Engineer" />
@@ -267,33 +190,28 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({ experience, updat
           <InputField label="Duration" value={exp.duration} onChange={(v) => updateExperience(exp.id, "duration", v)} placeholder="e.g. Jan 2020 - Dec 2022" />
           <TextAreaField label="Description (Key Achievements)" value={exp.description} onChange={(v) => updateExperience(exp.id, "description", v)} placeholder="Use bullet points" rows={3} />
         </div>
-      </Card>
+      </div>
     ))}
-    <Button onClick={addExperience} className="w-full bg-gray-700 hover:bg-gray-600 gap-2 border border-gray-600 transition-colors p-2">
+    <button onClick={addExperience} className="w-full bg-black/30 hover:bg-black/50 text-orange-400 font-medium rounded-lg p-3 flex justify-center items-center gap-2 border border-white/10 transition-colors">
       <Plus className="h-4 w-4" /> Add New Experience
-    </Button>
+    </button>
   </div>
 );
 
 // Education Section
-interface EducationSectionProps {
-  education: Education[];
-  updateEducation: (id: string, field: string, value: string) => void;
-  removeEducation: (id: string) => void;
-  addEducation: () => void;
-}
+interface EducationSectionProps { education: Education[]; updateEducation: (id: string, field: string, value: string) => void; removeEducation: (id: string) => void; addEducation: () => void; }
 const EducationSection: React.FC<EducationSectionProps> = ({ education, updateEducation, removeEducation, addEducation }) => (
   <div className="space-y-4">
     <h3 className="text-xl font-semibold text-gray-200 flex items-center gap-2">
       <GraduationCap className="h-5 w-5 text-orange-400" /> Education
     </h3>
     {education.map((edu, idx) => (
-      <Card key={edu.id} className="bg-gray-800 border-gray-700 p-4">
+      <div key={edu.id} className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 p-4">
         <div className="flex justify-between items-start mb-4">
           <p className="text-sm font-semibold text-orange-400">Entry #{idx + 1}</p>
-          <Button onClick={() => removeEducation(edu.id)} className="text-red-400 p-2 bg-transparent hover:bg-gray-700">
+          <button onClick={() => removeEducation(edu.id)} className="text-red-400 p-2 bg-transparent hover:bg-white/10 rounded-lg transition-colors">
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
         <div className="space-y-3">
           <InputField label="Degree/Field of Study" value={edu.degree} onChange={(v) => updateEducation(edu.id, "degree", v)} placeholder="e.g. B.Tech in Computer Science" />
@@ -303,19 +221,16 @@ const EducationSection: React.FC<EducationSectionProps> = ({ education, updateEd
             <InputField label="GPA/Percentage (optional)" value={edu.gpa || ""} onChange={(v) => updateEducation(edu.id, "gpa", v)} placeholder="e.g. 9.2/10.0" />
           </div>
         </div>
-      </Card>
+      </div>
     ))}
-    <Button onClick={addEducation} className="w-full bg-gray-700 hover:bg-gray-600 gap-2 border border-gray-600 transition-colors p-2">
+    <button onClick={addEducation} className="w-full bg-black/30 hover:bg-black/50 text-orange-400 font-medium rounded-lg p-3 flex justify-center items-center gap-2 border border-white/10 transition-colors">
       <Plus className="h-4 w-4" /> Add New Education
-    </Button>
+    </button>
   </div>
 );
 
 // ProjectsSection (keeps local state functions)
-interface ProjectsSectionProps {
-  projects: Project[];
-  setProjects: Dispatch<SetStateAction<Project[]>>;
-}
+interface ProjectsSectionProps { projects: Project[]; setProjects: Dispatch<SetStateAction<Project[]>>; }
 const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects, setProjects }) => {
   const addProject = () => setProjects((prev) => [...prev, { id: Date.now().toString(), title: "", description: "", techStack: [], link: "" }]);
   const updateProject = (id: string, field: keyof Project, value: any) => setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
@@ -327,12 +242,12 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects, setProjects
         <Code className="h-5 w-5 text-orange-400" /> Key Projects
       </h3>
       {projects.map((proj, idx) => (
-        <Card key={proj.id} className="bg-gray-800 border-gray-700 p-4">
+        <div key={proj.id} className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 p-4">
           <div className="flex justify-between items-start mb-4">
             <p className="text-sm font-semibold text-orange-400">Project #{idx + 1}</p>
-            <Button onClick={() => removeProject(proj.id)} className="text-red-400 p-2 bg-transparent hover:bg-gray-700">
+            <button onClick={() => removeProject(proj.id)} className="text-red-400 p-2 bg-transparent hover:bg-white/10 rounded-lg transition-colors">
               <Trash2 className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
           <div className="space-y-3">
             <InputField label="Project Title" value={proj.title} onChange={(v) => updateProject(proj.id, "title", v)} placeholder="e.g. AI Resume Optimizer" />
@@ -340,11 +255,11 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects, setProjects
             <InputField label="Tech Stack (comma-separated)" value={proj.techStack.join(", ")} onChange={(v) => updateProject(proj.id, "techStack", v.split(",").map(s => s.trim()))} />
             <TextAreaField label="Description" value={proj.description} onChange={(v) => updateProject(proj.id, "description", v)} rows={3} />
           </div>
-        </Card>
+        </div>
       ))}
-      <Button onClick={addProject} className="w-full bg-gray-700 hover:bg-gray-600 gap-2 border border-gray-600 transition-colors p-2">
+      <button onClick={addProject} className="w-full bg-black/30 hover:bg-black/50 text-orange-400 font-medium rounded-lg p-3 flex justify-center items-center gap-2 border border-white/10 transition-colors">
         <Plus className="h-4 w-4" /> Add New Project
-      </Button>
+      </button>
     </div>
   );
 };
@@ -388,22 +303,18 @@ const ResumeBuilder: React.FC = () => {
 
   const generateWithAI = () => setResume(mockAIGeneratedData);
 
-  const {
-    name, email, phone, location, jobTitle, summary,
-    skills, experience, education, projects, certifications, languages,
-  } = resume;
+  const { name, email, phone, location, jobTitle, summary, skills, experience, education, projects, certifications, languages } = resume;
 
   // Render active section
- const renderActiveSection = (): React.ReactElement | null => {
-
+  const renderActiveSection = (): React.ReactElement | null => {
     switch (activeSection) {
       case "personal":
         return (
-          <Card>
-            <div className="p-4 border-b border-gray-700">
+          <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-xl shadow-orange-400/20">
+            <div className="p-4 border-b border-white/10">
               <h3 className="text-orange-400 text-lg font-semibold">Personal Information & Summary</h3>
             </div>
-            <div className="p-4 space-y-4 bg-gray-800 border border-gray-700">
+            <div className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <InputField label="Full Name" value={name} onChange={(v) => updateResumeField("name", v)} />
                 <InputField label="Job Title" value={jobTitle} onChange={(v) => updateResumeField("jobTitle", v)} />
@@ -415,7 +326,7 @@ const ResumeBuilder: React.FC = () => {
               <InputField label="Location" value={location} onChange={(v) => updateResumeField("location", v)} />
               <TextAreaField label="Professional Summary" value={summary} onChange={(v) => updateResumeField("summary", v)} rows={3} />
             </div>
-          </Card>
+          </div>
         );
       case "skills":
         return <SkillInputSection label="Key Skills" items={skills} input={skillInput} setInput={setSkillInput} addItem={() => addItem("skills", skillInput, setSkillInput)} removeItem={(i) => removeItem("skills", i)} />;
@@ -424,17 +335,15 @@ const ResumeBuilder: React.FC = () => {
       case "education":
         return <EducationSection education={education} updateEducation={(id, f, v) => updateBlock("education", id, f, v)} removeEducation={(id) => removeBlock("education", id)} addEducation={() => addBlock("education", { degree: "", institution: "", year: "", gpa: "" })} />;
       case "projects":
-        return <ProjectsSection projects={projects} setProjects={(newProjects) => setResume((prev) => ({
-  ...prev,
-  projects: newProjects as Project[],}))} />;
+        return <ProjectsSection projects={projects} setProjects={(newProjects) => setResume((prev) => ({ ...prev, projects: newProjects as Project[], }))} />;
       case "additional":
         return (
           <div className="space-y-6">
-            <Card>
-              <div className="p-4 border-b border-gray-700">
+            <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-xl shadow-orange-400/20">
+              <div className="p-4 border-b border-white/10">
                 <h3 className="text-orange-400 text-lg font-semibold">Certifications</h3>
               </div>
-              <div className="p-4 space-y-3 bg-gray-800 border border-gray-700">
+              <div className="p-4 space-y-3">
                 {certifications.map((cert) => (
                   <div key={cert.id} className="flex gap-3 items-start border-b border-gray-700 pb-3">
                     <div className="flex-1 space-y-2">
@@ -444,16 +353,16 @@ const ResumeBuilder: React.FC = () => {
                         <InputField label="Date" value={cert.date} onChange={(v) => updateBlock("certifications", cert.id, "date", v)} placeholder="e.g. May 2024" />
                       </div>
                     </div>
-                    <Button onClick={() => removeBlock("certifications", cert.id)} className="text-red-400 p-2 bg-transparent hover:bg-gray-700 mt-7">
+                    <button onClick={() => removeBlock("certifications", cert.id)} className="text-red-400 p-2 bg-transparent hover:bg-white/10 rounded-lg mt-7">
                       <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </div>
                 ))}
-                <Button onClick={() => addBlock("certifications", { title: "", issuer: "", date: "" })} className="w-full bg-gray-700 hover:bg-gray-600 gap-2 border border-gray-600 transition-colors mt-2 p-2">
+                <button onClick={() => addBlock("certifications", { title: "", issuer: "", date: "" })} className="w-full bg-black/30 hover:bg-black/50 text-orange-400 font-medium rounded-lg p-3 flex justify-center items-center gap-2 border border-white/10 transition-colors mt-2">
                   <Plus className="h-4 w-4" /> Add Certification
-                </Button>
+                </button>
               </div>
-            </Card>
+            </div>
 
             <SkillInputSection label="Languages" items={languages} input={languageInput} setInput={setLanguageInput} addItem={() => addItem("languages", languageInput, setLanguageInput)} removeItem={(i) => removeItem("languages", i)} />
           </div>
@@ -464,9 +373,9 @@ const ResumeBuilder: React.FC = () => {
   };
 
   const ResumePreview: React.FC = () => (
-    <div className={`bg-gray-900 rounded-lg p-6 min-h-96 text-sm space-y-5 shadow-2xl border-t-4 border-orange-500`}>
+    <div className={`bg-black/30 rounded-xl p-6 min-h-96 text-sm space-y-5 shadow-inner border-t-4 border-orange-500`}>
       {name && (
-        <div className="text-center pb-3 border-b border-gray-700">
+        <div className="text-center pb-3 border-b border-white/10">
           <h2 className="text-3xl font-extrabold text-orange-400 tracking-wider uppercase">{name}</h2>
           {jobTitle && <p className="text-lg font-medium text-gray-300 mt-1">{jobTitle}</p>}
           {(email || phone || location) && (
@@ -481,21 +390,21 @@ const ResumeBuilder: React.FC = () => {
 
       {summary && (
         <div className="space-y-2">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-gray-700 pb-1">SUMMARY</h3>
+          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">SUMMARY</h3>
           <p className="text-gray-300 text-xs leading-relaxed">{summary}</p>
         </div>
       )}
 
       {skills.length > 0 && (
         <div className="space-y-2">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-gray-700 pb-1">KEY SKILLS</h3>
+          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">KEY SKILLS</h3>
           <p className="text-gray-300 text-xs">{skills.join(" • ")}</p>
         </div>
       )}
 
       {experience.length > 0 && (
         <div className="space-y-3">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-gray-700 pb-1">PROFESSIONAL EXPERIENCE</h3>
+          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">PROFESSIONAL EXPERIENCE</h3>
           {experience.map((exp) => (
             <div key={exp.id} className="text-xs space-y-1">
               <div className="flex justify-between font-semibold">
@@ -510,7 +419,7 @@ const ResumeBuilder: React.FC = () => {
 
       {projects.length > 0 && (
         <div className="space-y-3">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-gray-700 pb-1">PROJECTS</h3>
+          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">PROJECTS</h3>
           {projects.map((proj) => (
             <div key={proj.id} className="text-xs space-y-1">
               <p className="font-semibold text-gray-200">{proj.title} <span className="text-gray-500">({proj.techStack.join(', ')})</span></p>
@@ -523,7 +432,7 @@ const ResumeBuilder: React.FC = () => {
 
       {education.length > 0 && (
         <div className="space-y-3">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-gray-700 pb-1">EDUCATION</h3>
+          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">EDUCATION</h3>
           {education.map((edu) => (
             <div key={edu.id} className="text-xs flex justify-between">
               <div className="font-semibold">
@@ -541,7 +450,7 @@ const ResumeBuilder: React.FC = () => {
 
       {(certifications.length > 0 || languages.length > 0) && (
         <div className="space-y-3">
-          <h3 className="font-bold text-orange-400 text-sm border-b border-gray-700 pb-1">ADDITIONAL</h3>
+          <h3 className="font-bold text-orange-400 text-sm border-b border-white/10 pb-1">ADDITIONAL</h3>
           {certifications.length > 0 && (
             <div className="text-xs">
               <p className="font-semibold text-gray-300">Certifications:</p>
@@ -562,32 +471,35 @@ const ResumeBuilder: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-black text-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen relative text-white bg-black">
+      {/* Background Effect Overlay (Mimicking About Page Style) */}
+      <div className="absolute inset-0 z-0 bg-black/80 backdrop-blur-sm before:absolute before:inset-0 before:bg-gradient-to-br before:from-orange-500/10 before:to-yellow-400/10 before:animate-pulse" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 p-4 rounded-xl bg-black/40 border border-white/10 shadow-xl shadow-orange-400/20">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 via-yellow-400 to-red-400 text-transparent bg-clip-text mb-2">Resume Builder 🚀</h1>
             <p className="text-gray-400">Create your <strong>professional resume</strong> with <strong>AI assistance</strong></p>
           </div>
 
           <div className="flex gap-3">
-            <Button onClick={() => setPreview(!preview)} className={`gap-2 ${!preview ? "bg-orange-500 hover:bg-orange-600" : "border border-gray-600 hover:bg-gray-700 bg-transparent text-gray-300" } p-2`}>
+            <button onClick={() => setPreview(!preview)} className={`gap-2 flex items-center justify-center p-3 rounded-lg font-medium transition-colors ${!preview ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600" : "border border-white/10 bg-black/30 text-gray-300 hover:bg-black/50"}`}>
               {!preview ? <Eye className="h-4 w-4" /> : <Code className="h-4 w-4" />} {!preview ? "Preview" : "Edit"}
-            </Button>
+            </button>
 
-            <Button onClick={generateWithAI} className="gap-2 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg shadow-orange-500/30 transition-all p-2">
+            <button onClick={generateWithAI} className="gap-2 flex items-center justify-center p-3 rounded-lg font-bold bg-gradient-to-r from-orange-500 to-yellow-500 text-black hover:from-orange-600 hover:to-yellow-600 shadow-lg shadow-orange-500/30 transition-all">
               <Wand2 className="h-4 w-4 animate-pulse" /> Generate with AI
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Template Selection */}
-        <div className="mb-8 p-4 rounded-xl bg-gray-800 border border-gray-700 shadow-inner">
+        <div className="mb-8 p-4 rounded-xl bg-black/40 border border-white/10 shadow-inner">
           <label className="block text-sm font-semibold text-orange-400 mb-3">Choose Template</label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {TEMPLATES.map((t) => (
-              <button key={t.id} onClick={() => setTemplate(t.id)} className={`p-3 rounded-lg border-2 transition-all text-center ${template === t.id ? `border-orange-500 bg-gradient-to-br from-gray-700 to-gray-800 shadow-orange-500/50 shadow-md` : "border-gray-700 hover:border-orange-500/50 bg-gray-900"}`}>
+              <button key={t.id} onClick={() => setTemplate(t.id)} className={`p-3 rounded-lg border-2 transition-all text-center ${template === t.id ? `border-orange-500 bg-gradient-to-br from-black/50 to-black/30 shadow-orange-500/50 shadow-md` : "border-white/10 hover:border-orange-500/50 bg-black/20"}`}>
                 <div className={`h-10 bg-gradient-to-r ${t.color} rounded mb-2 w-full mx-auto`} />
                 <p className="text-xs font-medium text-gray-300">{t.name}</p>
               </button>
@@ -598,23 +510,21 @@ const ResumeBuilder: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {!preview && (
             <div className="lg:col-span-2 space-y-6">
-              <div className="flex gap-1 overflow-x-auto pb-2 border-b-2 border-gray-700">
+              <div className="flex gap-1 overflow-x-auto pb-2 border-b-2 border-white/10">
                 {SECTIONS.map((section) => (
-                  <button key={section.id} onClick={() => setActiveSection(section.id)} className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-t-lg ${activeSection === section.id ? "text-orange-400 border-b-2 border-orange-400 bg-gray-800 shadow-inner" : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/50"}`}>
+                  <button key={section.id} onClick={() => setActiveSection(section.id)} className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-t-lg ${activeSection === section.id ? "text-orange-400 border-b-2 border-orange-400 bg-black/40" : "text-gray-400 hover:text-gray-300 hover:bg-black/20"}`}>
                     {section.label}
                   </button>
                 ))}
               </div>
-
-              {/* Render Active Section */}
               {renderActiveSection()}
             </div>
           )}
 
           {/* Preview Column */}
           <div className={`${preview ? "lg:col-span-3" : "lg:col-span-1"}`}>
-            <Card className="bg-gray-800 border-gray-700 sticky top-4 shadow-xl">
-              <div className="p-4 border-b border-gray-700">
+            <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 sticky top-4 shadow-xl shadow-orange-400/20">
+              <div className="p-4 border-b border-white/10">
                 <div className="flex items-center gap-2 text-orange-400">
                   <FileText className="h-5 w-5" />
                   <h4 className="font-semibold">Live Resume Preview</h4>
@@ -624,16 +534,16 @@ const ResumeBuilder: React.FC = () => {
               <div className="p-6 space-y-6">
                 <ResumePreview />
 
-                <div className="flex gap-2 pt-4 border-t border-gray-700">
-                  <Button className="flex-1 gap-2 bg-orange-500 hover:bg-orange-600 transition-colors p-2">
+                <div className="flex gap-2 pt-4 border-t border-white/10">
+                  <button className="flex-1 gap-2 flex items-center justify-center bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 transition-colors text-black font-semibold p-3 rounded-lg">
                     <Download className="h-4 w-4" /> Download PDF
-                  </Button>
-                  <Button className="flex-1 gap-2 border border-gray-600 hover:bg-gray-700 bg-transparent text-gray-300 p-2">
+                  </button>
+                  <button className="flex-1 gap-2 flex items-center justify-center border border-white/10 hover:bg-black/50 bg-black/30 text-gray-300 font-semibold p-3 rounded-lg">
                     <Save className="h-4 w-4" /> Save Progress
-                  </Button>
+                  </button>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>
