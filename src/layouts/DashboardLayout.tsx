@@ -13,13 +13,14 @@ const DashboardLayout = () => {
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top bar (toggle sidebar) */}
+      {/* Main content wrapper */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top bar with sidebar toggle */}
         <TopBar setSidebarOpen={setSidebarOpen} />
 
         {/* Nested route content */}
-        <main className="p-6 overflow-auto">
+        {/* ⭐ ADDED ID HERE TO TARGET FOR SCROLLING ⭐ */}
+        <main id="dashboard-scroll-area" className="flex-1 p-6 overflow-auto">
           <Outlet />
         </main>
       </div>

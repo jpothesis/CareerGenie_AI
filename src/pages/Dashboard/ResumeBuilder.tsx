@@ -74,10 +74,10 @@ TemplateRenderer.displayName = 'TemplateRenderer';
 const INITIAL_RESUME_DATA: ResumeData = { name: "", email: "", phone: "", location: "", jobTitle: "", summary: "", skills: [], experience: [], education: [], projects: [], certifications: [], languages: [], };
 
 const TEMPLATES = [
-  { id: "modern", name: "Modern 🔥", color: "from-orange-500 to-amber-500" },
-  { id: "professional", name: "Classic 💼", color: "from-gray-500 to-slate-500" },
-  { id: "creative", name: "Creative ✨", color: "from-purple-500 to-pink-500" },
-  { id: "minimal", name: "Clean 🧼", color: "from-green-500 to-teal-500" },
+  { id: "modern", name: "Modern ", color: "from-orange-500 to-amber-500" },
+  { id: "professional", name: "Classic ", color: "from-gray-500 to-slate-500" },
+  { id: "creative", name: "Creative ", color: "from-purple-500 to-pink-500" },
+  { id: "minimal", name: "Clean ", color: "from-green-500 to-teal-500" },
 ];
 
 const SECTIONS = [
@@ -473,7 +473,7 @@ const ResumeBuilder: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 p-4 rounded-xl bg-black/40 border border-white/10 shadow-xl shadow-orange-400/20">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 via-yellow-400 to-red-400 text-transparent bg-clip-text mb-2">Resume Builder 🚀</h1>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 via-yellow-400 to-red-400 text-transparent bg-clip-text mb-2">Resume Builder </h1>
             <p className="text-gray-400">Create your <strong>professional resume</strong> with <strong>AI assistance</strong></p>
           </div>
 
