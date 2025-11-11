@@ -41,7 +41,7 @@ const generateResumeHandler = async (req, res) => {
     Projects: ${projects.map(p => `${p.title}: ${p.description}`).join("; ")}
     `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const result = await model.generateContent(prompt);
     const resumeText = result.response.text();
 

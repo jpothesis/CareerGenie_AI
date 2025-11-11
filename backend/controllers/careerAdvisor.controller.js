@@ -1,4 +1,4 @@
-const { getGeminiResponse } = require("../services/geminiService");
+const { generateFullText } = require("../services/geminiService");
 
 const generateCareerAdvice = async (req, res) => {
   try {
@@ -25,9 +25,10 @@ Give a personalized career path recommendation in 2–3 paragraphs. Mention:
 Avoid repeating the input.
     `;
 
-    const advice = await getGeminiResponse(prompt);
+    const advice = await generateFullText(prompt); 
     res.status(200).json({ advice });
   } catch (error) {
+    // Note: This catch block will now receive the error from geminiService.js
     res.status(500).json({ error: error.message || "Failed to generate career advice" });
   }
 };
