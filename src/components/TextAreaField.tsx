@@ -1,40 +1,49 @@
-// src/components/TextAreaField.tsx
-
 import React from "react";
 
-type TextAreaFieldProps = {
-  label: string;
-  placeholder?: string;
+export interface TextAreaFieldProps {
+  name: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  name?: string;
+  placeholder?: string;
+  label?: string;
+  rows?: number;
   required?: boolean;
-  rows?: number; // ✅ Add this line
-};
+  disabled?: boolean; // ✅ added this line
+}
 
 const TextAreaField: React.FC<TextAreaFieldProps> = ({
-  label,
-  placeholder,
+  name,
   value,
   onChange,
-  name,
+  placeholder,
+  label,
+  rows = 4,
   required,
-  rows = 5, // ✅ Set a default value
+  disabled = false, // ✅ default value
 }) => {
   return (
-    <div className="w-full mb-6">
-      <label className="block mb-2 font-medium text-white text-sm md:text-base">
-        {label}
-      </label>
+    <div className="space-y-1">
+      {label && (
+        <label
+          htmlFor={name}
+          className="text-xs font-medium text-gray-400"
+        >
+          {label}
+        </label>
+      )}
       <textarea
+        id={name}
         name={name}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        required={required}
         rows={rows}
-        className="w-full px-4 py-2 rounded-md bg-[#1a1a2e] text-white placeholder:text-gray-400 border-2 border-transparent focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:shadow-[0_0_0_3px_rgba(234,179,8,0.5)] transition duration-200 resize-none"
-      ></textarea>
+        required={required}
+        disabled={disabled} // ✅ now supported
+        className={`w-full p-3 bg-black/30 border border-white/10 text-white placeholder:text-gray-500 rounded-lg focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors ${
+          disabled ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+      />
     </div>
   );
 };

@@ -1,12 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-// Assuming you have a standard InputField and TextAreaField component
 import InputField from "../../components/InputField";
 import TextAreaField from "../../components/TextAreaField";
-// Removed bgImage import to use a cleaner CSS background
-import { Wand2, MessageSquare, CheckCircle, Send, XCircle } from "lucide-react"; // Imported new icons
-
-// --- CONSTANTS & TYPES (New fields) ---
+import { Wand2, MessageSquare, CheckCircle, Send, XCircle } from "lucide-react";
 
 const INTERVIEW_TYPES = [
   { id: "mixed", name: "Mixed (Default)" },
@@ -17,18 +13,16 @@ const INTERVIEW_TYPES = [
 
 const SENIORITY_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Executive"];
 
-// --- AIInterviews Component ---
-
 const AIInterviews = () => {
   const [form, setForm] = useState({
     role: "",
-    seniority: "Junior", // Changed default to capital for consistency
+    seniority: "Junior",
     numQuestions: 5,
     jdText: "",
     resumeText: "",
-    interviewType: "mixed", // New field
-    focusAreas: "", // New field
-    language: "English", // New field
+    interviewType: "mixed",
+    focusAreas: "",
+    language: "English",
   });
 
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -36,7 +30,7 @@ const AIInterviews = () => {
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false); // New state for answer submission
+  const [submitting, setSubmitting] = useState(false);
   const [interviewDone, setInterviewDone] = useState(false);
   const feedbackRef = useRef<HTMLDivElement | null>(null);
 
@@ -46,7 +40,7 @@ const AIInterviews = () => {
     const { name, value } = e.target;
     setForm({
       ...form,
-      [name]: name === "numQuestions" ? Math.max(1, Number(value)) : value, // Ensure min 1 question
+      [name]: name === "numQuestions" ? Math.max(1, Number(value)) : value,
     });
   };
 
@@ -56,157 +50,174 @@ const AIInterviews = () => {
     setFeedback("");
     setSessionId(null);
     setInterviewDone(false);
+    setCurrentQuestion("");
 
     try {
-      // Basic validation
       if (!form.role.trim()) {
-         setFeedback("❌ Please enter a Role to start the interview.");
-         return;
+        setFeedback("❌ Please enter a **Role** to start the interview.");
+        return;
       }
-      
+
       const res = await axios.post("/api/interview/start", form);
-      
-      // Check if the response contains necessary data
+
       if (res.data.sessionId && res.data.question) {
         setSessionId(res.data.sessionId);
         setCurrentQuestion(res.data.question);
       } else {
         setFeedback("❌ Interview engine failed to return a session ID or first question.");
       }
-
     } catch (err) {
       console.error(err);
-      setFeedback("❌ Failed to start interview. Please check server logs.");
+      const errorMsg =
+        axios.isAxiosError(err) && err.response?.data?.message
+          ? err.response.data.message
+          : "❌ Failed to start interview. Please check server logs.";
+      setFeedback(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  const submitAnswer = () => {
+  const submitAnswer = async () => {
     if (!sessionId || !answer.trim() || submitting) return;
 
     setSubmitting(true);
-    setFeedback("");
-    
-    // 1. Initialize EventSource
-    // Note: EventSource should listen to the feedback/stream endpoint, 
-    // and the POST request should be sent separately.
-    const eventSource = new EventSource(`/api/interview/${sessionId}/stream`, { 
-      withCredentials: true,
-    } as any);
+    const answerText = answer.trim();
 
-    let receivedFeedback = false;
-    let errorOccurred = false;
+    setFeedback((prev) => prev + "\n\n--- [ AI is evaluating... ] ---\n\n");
+    setAnswer("");
 
-    eventSource.onopen = () => {
-        // 2. Send the answer via POST request right after EventSource is open
-        axios.post(`/api/interview/${sessionId}/answer`, { answerText: answer })
-        .catch(err => {
-            console.error("Answer POST error:", err);
-            setFeedback("❌ Error submitting answer to the server.");
-            eventSource.close();
-            setSubmitting(false);
-            errorOccurred = true;
-        });
-    };
+    try {
+      const response = await fetch(`/api/interview/answer/${sessionId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answerText }),
+      });
 
-    eventSource.onmessage = (event) => {
-      if(errorOccurred) return;
-      
-      try {
-        const data = JSON.parse(event.data);
-
-        if (data.delta) {
-          setFeedback((prev) => prev + data.delta);
-          receivedFeedback = true;
-        }
-        
-        if (data.nextQuestion) {
-          setCurrentQuestion(data.nextQuestion);
-          setAnswer("");
-          setSubmitting(false);
-          eventSource.close();
-        }
-        
-        if (data.done) {
-          setInterviewDone(true);
-          setCurrentQuestion("");
-          setSubmitting(false);
-          eventSource.close();
-        }
-        
-        if (data.error) {
-          setFeedback(`❌ ${data.error}`);
-          setSubmitting(false);
-          eventSource.close();
-        }
-      } catch (e) {
-        console.error("Error parsing stream message:", e);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Server responded with status ${response.status}`);
       }
-    };
 
-    eventSource.onerror = (err) => {
-      console.error("EventSource failed:", err);
-      // Only show a generic error if we haven't already received feedback/next steps
-      if (!receivedFeedback && !errorOccurred) {
-        setFeedback("❌ Connection lost. Please try again.");
-        setSubmitting(false);
+      if (!response.body) throw new Error("No response stream available.");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      setFeedback((prev) => prev.replace("\n\n--- [ AI is evaluating... ] ---\n\n", ""));
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+          let lines = buffer.split("\n\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data:")) {
+              try {
+                const data = JSON.parse(line.substring(5).trim());
+                if (data.delta) setFeedback((prev) => prev + data.delta);
+                if (data.nextQuestion) {
+                  setCurrentQuestion(data.nextQuestion);
+                  setSubmitting(false);
+                }
+                if (data.done) {
+                  await finalizeInterview(sessionId);
+                  setInterviewDone(true);
+                  setCurrentQuestion("");
+                  setSubmitting(false);
+                  return;
+                }
+                if (data.error) {
+                  setFeedback((prev) => prev + `\n\n❌ Server Error: ${data.error}`);
+                  setSubmitting(false);
+                  return;
+                }
+              } catch (e) {
+                console.error("Error parsing stream message:", e, line);
+              }
+            }
+          }
+        }
       }
-      eventSource.close();
-    };
+      setSubmitting(false);
+    } catch (err: any) {
+      console.error("Submit Answer Error:", err);
+      setFeedback((prev) => prev + `\n\n❌ Failed to submit answer: ${err.message || "Connection lost"}`);
+      setSubmitting(false);
+    }
   };
 
-  // Auto-scroll feedback box
+  const finalizeInterview = async (sessionId: string) => {
+    try {
+      const endRes = await axios.post(`/api/interview/${sessionId}/end`);
+      setFeedback((prev) => prev + `\n\n✅ Final Score Saved! (Average: ${endRes.data.finalScore} / 5)\n\n`);
+
+      const summaryRes = await axios.get(`/api/interview/summary/${sessionId}`);
+      setFeedback(summaryRes.data.summary);
+    } catch (err) {
+      console.error("Error finalizing or getting summary:", err);
+      setFeedback((prev) => prev + "\n\n❌ **CRITICAL ERROR:** Failed to finalize interview or fetch final summary.");
+    }
+  };
+
   useEffect(() => {
     if (feedbackRef.current) {
       feedbackRef.current.scrollTop = feedbackRef.current.scrollHeight;
     }
   }, [feedback]);
-  
-  // Custom Select Field for better styling
-  const SelectField: React.FC<{ label: string; name: string; value: string; options: string[]; onChange: typeof handleChange }> = 
-    ({ label, name, value, options, onChange }) => (
-      // ⭐ MODIFIED: Used "space-y-1" and "relative" for container consistency ⭐
-      <div className="space-y-1 relative"> 
-        <label className="text-xs font-medium text-gray-400">{label}</label>
-        <select
-          name={name}
-          value={value}
-          onChange={onChange}
-          className="w-full p-3 bg-black/30 border border-white/10 text-white placeholder:text-gray-500 rounded-lg focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors appearance-none"
-          style={{ backgroundImage: 'none' }} // Override Tailwind/browser default arrow
+
+  const SelectField: React.FC<{
+    label: string;
+    name: string;
+    value: string;
+    options: string[];
+    onChange: typeof handleChange;
+  }> = ({ label, name, value, options, onChange }) => (
+    <div className="space-y-1 relative">
+      <label className="text-xs font-medium text-gray-400">{label}</label>
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full p-3 bg-black/30 border border-white/10 text-white placeholder:text-gray-500 rounded-lg focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors appearance-none"
+        style={{ backgroundImage: "none" }}
+      >
+        {options.map((option) => (
+          <option key={option} value={option.toLowerCase().replace(/ /g, "_")} className="bg-black text-white">
+            {option}
+          </option>
+        ))}
+      </select>
+      <div className="absolute right-3 top-1/2 translate-y-1.5 pointer-events-none">
+        <svg
+          className="w-4 h-4 text-orange-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {options.map(option => (
-            <option key={option} value={option.toLowerCase().replace(/ /g, '_')} className="bg-black text-white">
-              {option}
-            </option>
-          ))}
-        </select>
-        {/* Adjusted vertical position (translate-y-1.5 -> top-1/2 translate-y-0) 
-            to align the arrow inside the input box height */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"> 
-            <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-        </div>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
       </div>
+    </div>
   );
-
-
-  // --- Render ---
 
   return (
     <div className="min-h-screen relative text-white bg-black">
-      {/* Background Effect Overlay (Adapted from ResumeBuilder) */}
       <div className="absolute inset-0 z-0 bg-black/80 backdrop-blur-sm before:absolute before:inset-0 before:bg-gradient-to-br before:from-orange-500/10 before:to-yellow-400/10 before:animate-pulse" />
-
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-10">
         <div className="mb-8 p-4 rounded-xl bg-black/40 border border-white/10 shadow-xl shadow-orange-400/20 text-center">
-            <h1 className="text-4xl font-extrabold bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-transparent bg-clip-text mb-2">
-              <MessageSquare className="inline h-8 w-8 mr-2" /> AI Interview Coach
-            </h1>
-            <p className="text-gray-400">Simulate real job interviews tailored to your role, resume, and JD.</p>
+          <h1 className="text-4xl font-extrabold bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-transparent bg-clip-text mb-2">
+            <MessageSquare className="inline h-8 w-8 mr-2" /> AI Interview Coach
+          </h1>
+          <p className="text-gray-400">Simulate real job interviews tailored to your role, resume, and JD.</p>
         </div>
 
-        {/* --- Interview Setup Form (If not started) --- */}
         {!sessionId ? (
           <div className="animate-fade-in">
             <form onSubmit={startInterview} className="space-y-6">
@@ -219,7 +230,6 @@ const AIInterviews = () => {
                   label="Target Role"
                   required
                 />
-                
                 <SelectField
                   label="Seniority"
                   name="seniority"
@@ -227,33 +237,26 @@ const AIInterviews = () => {
                   onChange={handleChange}
                   options={SENIORITY_LEVELS}
                 />
-
-                <div className="relative">
-                  <InputField
-                    name="numQuestions"
-                    value={form.numQuestions.toString()}
-                    onChange={handleChange}
-                    placeholder="5"
-                    label="Questions Count (Max 10)"
-                    type="number"
-                    min="1"
-                    max="10"
-                  />
-                </div>
+                <InputField
+                  name="numQuestions"
+                  value={form.numQuestions.toString()}
+                  onChange={handleChange}
+                  placeholder="5"
+                  label="Questions Count (Max 10)"
+                  type="number"
+                  min="1"
+                  max="10"
+                />
               </div>
 
-              {/* Advanced Settings */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <SelectField
-                    label="Interview Type"
-                    name="interviewType"
-                    value={form.interviewType}
-                    onChange={handleChange}
-                    options={INTERVIEW_TYPES.map(t => t.name)}
-                  />
-                </div>
-
+                <SelectField
+                  label="Interview Type"
+                  name="interviewType"
+                  value={form.interviewType}
+                  onChange={handleChange}
+                  options={INTERVIEW_TYPES.map((t) => t.name)}
+                />
                 <InputField
                   name="focusAreas"
                   value={form.focusAreas}
@@ -262,7 +265,7 @@ const AIInterviews = () => {
                   label="Key Focus Areas (Keywords)"
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TextAreaField
                   name="jdText"
@@ -272,7 +275,6 @@ const AIInterviews = () => {
                   label="Job Description (JD)"
                   rows={4}
                 />
-
                 <TextAreaField
                   name="resumeText"
                   value={form.resumeText}
@@ -301,21 +303,18 @@ const AIInterviews = () => {
             </form>
           </div>
         ) : (
-          /* --- Active Interview Session --- */
           <div className="animate-fade-in space-y-6">
             <div className="p-6 rounded-xl bg-black/40 border border-white/10 shadow-xl shadow-orange-400/20">
-              
-              {/* Question Area */}
               {currentQuestion && (
                 <div className="pb-4 mb-4 border-b border-white/10">
                   <h2 className="text-xl font-bold text-orange-400 mb-3 flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" /> AI Interviewer
                   </h2>
-                  <p className="text-lg text-white font-medium whitespace-pre-wrap animate-fade-in">{currentQuestion}</p>
+                  <p className="text-lg text-white font-medium whitespace-pre-wrap animate-fade-in">
+                    {currentQuestion}
+                  </p>
                 </div>
               )}
-
-              {/* Answer Input */}
               {currentQuestion && !interviewDone && (
                 <div>
                   <TextAreaField
@@ -326,8 +325,8 @@ const AIInterviews = () => {
                     label="Your Answer"
                     rows={4}
                     required
+                    disabled={submitting}
                   />
-
                   <button
                     onClick={submitAnswer}
                     disabled={submitting || !answer.trim()}
@@ -347,56 +346,57 @@ const AIInterviews = () => {
               )}
             </div>
 
-            {/* Feedback / Summary Area */}
             {feedback && (
               <div
                 ref={feedbackRef}
-                className={`mt-4 p-6 bg-black/50 border border-green-500/20 rounded-xl shadow-lg shadow-green-500/20 max-h-96 overflow-y-auto transition-all ${interviewDone ? 'border-pink-500/20' : 'border-green-500/20'}`}
+                className={`mt-4 p-6 bg-black/50 border rounded-xl shadow-lg max-h-96 overflow-y-auto transition-all 
+                  ${interviewDone ? "border-pink-500/20 shadow-pink-500/20" : "border-green-500/20 shadow-green-500/20"}`}
               >
-                <h2 className={`text-xl font-bold mb-3 flex items-center gap-2 ${interviewDone ? 'text-pink-400' : 'text-green-400'}`}>
-                    {interviewDone ? <CheckCircle className="h-5 w-5" /> : <MessageSquare className="h-5 w-5" />} 
-                    {interviewDone ? "Final Summary" : "Live Feedback"}
+                <h2
+                  className={`text-xl font-bold mb-3 flex items-center gap-2 ${
+                    interviewDone ? "text-pink-400" : "text-green-400"
+                  }`}
+                >
+                  {interviewDone ? <CheckCircle className="h-5 w-5" /> : <MessageSquare className="h-5 w-5" />}{" "}
+                  {interviewDone ? "Final Summary" : "Live Feedback"}
                 </h2>
-                <p className="whitespace-pre-wrap text-sm text-gray-200">
-                  {feedback}
-                </p>
+                <p className="whitespace-pre-wrap text-sm text-gray-200">{feedback}</p>
               </div>
             )}
 
-            {/* Interview Done Message */}
             {interviewDone && (
               <div className="mt-6 p-4 rounded-xl text-center bg-black/40 border border-pink-400/50 shadow-lg shadow-pink-400/20 animate-bounce-once">
                 <p className="text-pink-400 font-bold text-xl flex items-center justify-center gap-3">
                   <CheckCircle className="h-6 w-6" /> Interview Completed!
                 </p>
-                <p className="text-gray-300 mt-1">Review the final summary above or click the button below to start a new session.</p>
+                <p className="text-gray-300 mt-1">
+                  Review the final summary above or click the button below to start a new session.
+                </p>
                 <button
-                    onClick={() => setSessionId(null)}
-                    className="mt-4 py-2 px-6 text-base bg-gradient-to-r from-orange-500 to-yellow-500 text-black font-bold rounded-lg hover:opacity-90 transition"
-                  >
-                    Start New Interview
-                  </button>
+                  onClick={() => setSessionId(null)}
+                  className="mt-4 py-2 px-6 text-base bg-gradient-to-r from-orange-500 to-yellow-500 text-black font-bold rounded-lg hover:opacity-90 transition"
+                >
+                  Start New Interview
+                </button>
               </div>
             )}
-            
-             {/* Error Message for missing question/session */}
-            {!currentQuestion && !interviewDone && !loading && (
-                 <div className="mt-6 p-4 rounded-xl text-center bg-black/40 border border-red-400/50 shadow-lg shadow-red-400/20 animate-fade-in">
-                    <p className="text-red-400 font-bold text-xl flex items-center justify-center gap-3">
-                        <XCircle className="h-6 w-6" /> Interview Halted
-                    </p>
-                    <p className="text-gray-300 mt-1">
-                        The interview session may have expired or encountered an error. Please try starting a new one.
-                    </p>
-                     <button
-                        onClick={() => setSessionId(null)}
-                        className="mt-4 py-2 px-6 text-base bg-gradient-to-r from-orange-500 to-yellow-500 text-black font-bold rounded-lg hover:opacity-90 transition"
-                      >
-                        Go to Setup
-                      </button>
-                 </div>
-            )}
 
+            {!currentQuestion && !interviewDone && !loading && (
+              <div className="mt-6 p-4 rounded-xl text-center bg-black/40 border border-red-400/50 shadow-lg shadow-red-400/20 animate-fade-in">
+                <p className="text-red-400 font-bold text-xl flex items-center justify-center gap-3">
+                  <XCircle className="h-6 w-6" /> Interview Halted
+                </p>
+                <p className="text-gray-300 mt-1">
+                  The interview session may have expired or encountered an error. Please try starting a new one.
+                </p>
+                <button
+                  onClick={() => setSessionId(null)}
+                  className="mt-4 py-2 px-6 text-base bg-gradient-to-r from-orange-500 to-yellow-500 text-black font-bold rounded-lg hover:opacity-90 transition"
+                >
+                  Go to Setup
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
