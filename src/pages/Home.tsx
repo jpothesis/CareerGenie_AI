@@ -10,7 +10,7 @@ const Hero = () => {
 
   return (
     <main
-      className="relative bg-cover bg-center bg-no-repeat min-h-screen flex flex-col lg:flex-row items-center lg:justify-between px-4 lg:px-20"
+      className="relative bg-cover bg-center bg-no-repeat min-h-screen flex flex-col lg:flex-row items-center justify-center lg:justify-between px-4 sm:px-6 md:px-10 lg:px-20"
       style={{
         backgroundImage: `url(${backgroundImage})`,
       }}
@@ -19,7 +19,7 @@ const Hero = () => {
       <div className="absolute inset-0 bg-black/60 z-0" />
 
       {/* Left Content */}
-      <div className="relative z-10 max-w-xl py-20 lg:py-0 flex flex-col justify-center items-center lg:items-start h-full lg:min-h-screen text-center lg:text-left">
+      <div className="relative z-10 max-w-xl py-20 flex flex-col justify-center items-center lg:items-start text-center lg:text-left">
         {/* Tag */}
         <div className="relative w-[95%] sm:w-48 h-10 bg-gradient-to-r from-[#656565] to-[#e99b63] shadow-[0_0_15px_rgba(255,255,255,0.4)] rounded-full">
           <div className="absolute inset-[3px] bg-black rounded-full flex items-center justify-center gap-1 text-white text-sm font-medium">
@@ -53,7 +53,13 @@ const Hero = () => {
 
       {/* Right - 3D Bot Section */}
       <div className="relative z-10 w-full lg:w-1/2 mt-16 lg:mt-0 flex justify-center items-center">
-        <div className="scale-[1.3] w-full h-full max-w-[600px]">
+        {/*
+          Key Mobile Adjustment:
+          - Default scale is 1.0 (or even slightly less) for mobile for better fit.
+          - Added a max-h-[400px] to limit the 3D area height on small screens.
+          - Applied the larger scale (1.3) only on large screens (lg:scale-[1.3]).
+        */}
+        <div className="scale-[1.05] lg:scale-[1.3] w-full h-full max-w-[600px] max-h-[400px] sm:max-h-[500px] lg:max-h-full">
           <Spline scene="https://prod.spline.design/nGHLyynb1ukRcpu7/scene.splinecode" />
         </div>
       </div>
