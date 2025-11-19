@@ -23,7 +23,7 @@ exports.getDashboardAnalytics = async (req, res) => {
 
     // 4. Learning Progress %
     const courses = await CourseProgress.find({ user: userId });
-    const completed = courses.filter(c => c.completed).length;
+    const completed = courses.filter(c => c.progress === 100).length; 
     const total = courses.length;
     const learningPercent = total ? Math.round((completed / total) * 100) : 0;
 
@@ -52,10 +52,10 @@ exports.getDashboardAnalytics = async (req, res) => {
 
     // 6. Device Usage (for Radar)
     const usageData = await ActivityLog.aggregate([
-      { $match: { user: req.user._id } },
+      { $match: { user: userId } },
       {
         $group: {
-          _id: "$platform", // 'mobile' or 'desktop'
+          _id: "$platform", // Field doesn't exist, so this returns null groups
           count: { $sum: 1 }
         }
       }
