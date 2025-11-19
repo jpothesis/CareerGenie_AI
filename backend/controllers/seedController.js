@@ -16,13 +16,12 @@ exports.seedDashboardData = async (req, res) => {
 
     // 2. Create Fake Jobs
     await AppliedJob.create([
-      { user: userId, jobTitle: "Frontend Developer", company: "Google", status: "Applied", appliedAt: new Date() },
-      { user: userId, jobTitle: "Software Engineer", company: "Netflix", status: "Interview", appliedAt: new Date() },
-      { user: userId, jobTitle: "React Developer", company: "Meta", status: "Rejected", appliedAt: new Date() },
-      { user: userId, jobTitle: "Full Stack Engineer", company: "Amazon", status: "Offer", appliedAt: new Date() },
-      { user: userId, jobTitle: "Backend Developer", company: "Spotify", status: "Applied", appliedAt: new Date() }
-    ]);
-
+        { user: userId, title: "Frontend Developer", company: "Google", status: "Applied", appliedAt: new Date() },
+        { user: userId, title: "Software Engineer", company: "Netflix", status: "Interview", appliedAt: new Date() },
+        { user: userId, title: "React Developer", company: "Meta", status: "Rejected", appliedAt: new Date() },
+        { user: userId, title: "Full Stack Engineer", company: "Amazon", status: "Offer", appliedAt: new Date() },
+        { user: userId, title: "Backend Developer", company: "Spotify", status: "Applied", appliedAt: new Date() }
+      ]);
     // 3. Create Activity Logs (For Graph & Radar)
     const logs = [];
     const months = [0, 1, 2, 3, 4, 5]; // Last 6 months
