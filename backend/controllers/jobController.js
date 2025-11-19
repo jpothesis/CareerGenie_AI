@@ -1,3 +1,4 @@
+const logActivity = require('../utils/activityLogger');
 const Job = require("../models/Job");
 
 // Create a Job 
@@ -15,6 +16,9 @@ const createJob = async (req, res) => {
       status,
       notes
     });
+    
+    // Log the job application activity
+    await logActivity(req.user._id, 'job_apply', `Applied to ${req.body.company}`, req);
 
     res.status(201).json(job);
   } catch (error) {

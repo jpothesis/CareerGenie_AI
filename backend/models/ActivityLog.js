@@ -15,6 +15,11 @@ const activityLogSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  platform: { 
+    type: String, 
+    enum: ['mobile', 'desktop'], 
+    default: 'desktop' 
+  },
   timestamp: {
     type: Date,
     default: Date.now,

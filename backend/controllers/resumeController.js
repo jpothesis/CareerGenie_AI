@@ -1,5 +1,5 @@
 // controllers/resumeController.js
-
+const logActivity = require('../utils/activityLogger');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Resume = require("../models/Resume");
 const { generateResumePDF } = require("../services/pdfService");
@@ -50,6 +50,11 @@ const generateResumeHandler = async (req, res) => {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const result = await model.generateContent(prompt);
     const resumeText = result.response.text();
+
+    // LOG ACTIVITY: Log resume generation activity
+    if (userId) {
+      await logActivity(userId, 'resume_generation', 'Generated AI Resume', req);
+  }
 
     // 1. Save to DB if requested
     let savedResume = null;
