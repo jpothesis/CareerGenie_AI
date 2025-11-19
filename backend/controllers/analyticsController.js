@@ -71,10 +71,12 @@ exports.getDashboardAnalytics = async (req, res) => {
     }));
 
     // 7. Recent Activities
-    const recentActivities = await ActivityLog.find({ user: userId })
-      .sort({ timestamp: -1 })
-      .limit(6)
-      .select('description timestamp status');
+    const recentActivities = recentLogs.map(log => ({
+      description: log.type.replace(/_/g, ' ').toUpperCase(), // 'job_apply' -> 'JOB APPLY'
+      message: log.message,
+      timestamp: log.timestamp,
+      status: "Completed" // Default status since schema doesn't have one
+    }));
 
     //  Send to frontend
     res.status(200).json({
