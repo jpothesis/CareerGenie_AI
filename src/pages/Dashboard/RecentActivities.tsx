@@ -2,10 +2,27 @@
 
 import React from "react";
 import { BadgeDollarSign } from "lucide-react";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "./DashboardContext";
+
+// Define the required type structure explicitly for safe mapping
+interface ActivityItem {
+  description?: string; // Made optional
+  message?: string;     // Added for fallback
+  timestamp: string;
+  status?: string;      // CRITICAL: Must be defined (and optional)
+}
 
 const RecentActivities: React.FC = () => {
   const { data, loading, error } = useDashboard();
+
+  const getStatusStyle = (status: string | undefined) => {
+    switch ((status || 'completed').toLowerCase()) {
+        case 'completed': return 'text-green-300';
+        case 'pending': return 'text-yellow-300';
+        case 'failed': return 'text-red-400';
+        default: return 'text-gray-400';
+    }
+  };
 
   if (loading)
     return <p className="col-span-12 p-4 text-orange-200">Loading activities...</p>;
@@ -46,9 +63,17 @@ const RecentActivities: React.FC = () => {
               <td className="py-2 px-1">
                 {new Date(item.timestamp).toLocaleDateString()}
               </td>
-              <td className="py-2 px-1 text-green-300">Completed</td>
+              {/* Applies dynamic color based on status */}
+              <td className={`py-2 px-1 ${getStatusStyle(item.status)}`}>
+                {item.status || "Completed"}
+              </td>
             </tr>
           ))}
+          {data.recentActivities.length === 0 && (
+              <tr>
+                  <td colSpan={3} className="text-center py-4 text-orange-300/50 italic">No recent activities recorded.</td>
+              </tr>
+          )}
         </tbody>
       </table>
     </div>

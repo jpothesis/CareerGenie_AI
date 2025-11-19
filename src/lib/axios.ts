@@ -20,7 +20,7 @@ const api: AxiosInstance = axios.create({
 // ===========================
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    const token = localStorage.getItem('token'); // ✅ Get token from storage
+    const token = localStorage.getItem('jwttoken'); // ✅ Get token from storage
     if (token && config.headers) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }

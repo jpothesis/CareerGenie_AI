@@ -10,7 +10,7 @@ import {
   Line,
   LineChart,
 } from "recharts";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "./DashboardContext";
 
 const ActivityGraph = () => {
   const { data, loading, error } = useDashboard();
@@ -23,13 +23,7 @@ const ActivityGraph = () => {
     );
   }
 
-  if (error || !data || !data.activityGraph) {
-    return (
-      <div className="col-span-8 p-4 rounded border border-orange-300/30 bg-gradient-to-br from-[#2c1b0a] via-[#3a230d] to-[#1c1005]">
-        <p className="text-red-400">Failed to load activity graph.</p>
-      </div>
-    );
-  }
+const graphData = data?.activityGraph || [];
 
   return (
     <div className="col-span-12 lg:col-span-8 overflow-hidden rounded border border-orange-300/30 bg-gradient-to-br from-[#2c1b0a] via-[#3a230d] to-[#1c1005] shadow-md hover:shadow-orange-400/20 transition-all">
@@ -43,7 +37,7 @@ const ActivityGraph = () => {
       <div className="h-64 px-4 py-2">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data.activityGraph}
+            data={graphData}
             margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
           >
             <CartesianGrid stroke="rgba(255, 255, 255, 0.1)" />
