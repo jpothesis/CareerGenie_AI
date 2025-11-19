@@ -71,11 +71,17 @@ exports.getDashboardAnalytics = async (req, res) => {
     }));
 
     // 7. Recent Activities
+    // 1. Fetch the raw logs first (Define 'recentLogs' here)
+    const recentLogs = await ActivityLog.find({ user: userId })
+    .sort({ timestamp: -1 })
+    .limit(6);
+
+    // 2. Map them to the format frontend expects
     const recentActivities = recentLogs.map(log => ({
-      description: log.type.replace(/_/g, ' ').toUpperCase(), // 'job_apply' -> 'JOB APPLY'
-      message: log.message,
-      timestamp: log.timestamp,
-      status: "Completed" // Default status since schema doesn't have one
+    description: log.type ? log.type.replace(/_/g, ' ').toUpperCase() : 'ACTIVITY',
+    message: log.message,
+    timestamp: log.timestamp,
+    status: "Completed" 
     }));
 
     //  Send to frontend
