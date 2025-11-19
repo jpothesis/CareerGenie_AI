@@ -1,4 +1,4 @@
-const AppliedJob = require('../models/AppliedJob');
+const AppliedJob = require('../models/Job');
 const ResumeScore = require('../models/ResumeScore');
 const InterviewAttempt = require('../models/InterviewAttempt');
 const CourseProgress = require('../models/CourseProgress');
