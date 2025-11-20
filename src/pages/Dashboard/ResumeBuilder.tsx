@@ -296,28 +296,35 @@ const ResumeBuilder: React.FC = () => {
   };
 
   // --- UPDATED AI GENERATION LOGIC ---
-  const generateWithAI = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // Call the imported API service function, passing current data for context
-      const generatedData = await fetchAIGeneratedData(resume); 
-      
-      // Basic validation
-      if (!generatedData || typeof generatedData.name !== 'string') {
-          throw new Error("Received invalid data structure from AI.");
-      }
-      
-      setResume(generatedData);
-      
-    } catch (err: any) {
-      console.error("AI Generation Error:", err);
-      // Display the specific error message from the API file
-      setError(err.message || "An unknown error occurred during AI generation.");
-    } finally {
-      setIsLoading(false);
+// Inside ResumeBuilder.tsx -> generateWithAI function
+const generateWithAI = async () => {
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    // 🔥 send full resume data to backend
+    const generatedData = await fetchAIGeneratedData(resume);
+
+    // Additional safety check
+    if (!generatedData || typeof generatedData !== "object") {
+      throw new Error("AI returned invalid formatted data.");
     }
-  };
+
+    if (!generatedData.name) {
+      console.warn("AI Missing name field: ", generatedData);
+    }
+
+    // 🔥 Update UI safely
+    setResume((prev) => ({
+      ...prev,
+      ...generatedData,
+    }));
+  } catch (err: any) {
+    setError(err.message || "Failed to generate resume.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // --- PDF DOWNLOAD LOGIC (Unchanged) ---
   const handleDownload = () => {
