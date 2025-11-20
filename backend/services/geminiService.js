@@ -1,11 +1,11 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// services/geminiService.js
+
+const { GoogleGenerativeAI, SchemaType } = require("@google/generative-ai");
 
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ CRITICAL ERROR: GEMINI_API_KEY is missing in .env file.");
 }
-// services/geminiService.js
 
-const { GoogleGenerativeAI, SchemaType } = require("@google/generative-ai");
 
 // Initialize Gemini
 // This will automatically use process.env.GEMINI_API_KEY if available.
