@@ -8,12 +8,12 @@ type ProtectedRouteProps = {
 };
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { token, loadFromStorage } = useAuthStore();
+  const { token, checkAuth } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadFromStorage();
-  }, [loadFromStorage]);
+    checkAuth();
+  }, [checkAuth]);
 
   useEffect(() => {
     if (!token) {

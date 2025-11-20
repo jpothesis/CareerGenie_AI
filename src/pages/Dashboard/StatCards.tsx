@@ -1,16 +1,26 @@
 import { TrendingUp } from "lucide-react";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "./DashboardContext";
 
 const StatCards = () => {
   const { data, loading, error } = useDashboard();
+  
+  // Calculate dynamic values 
+  const totalCourses = 6;
+  // Use optional chaining (data?....) and null coalescing (|| 0) for safety
+  const learningCompletedCount = Math.floor((data?.learningProgress || 0) / (100 / totalCourses)) || 0;
+
+  const maxAttempts = 5; 
+  // If score > 0, assume maxAttempts were used for the average
+  const interviewAttempts = (data?.interviewScore || 0) > 0 ? maxAttempts : 0;
+  const interviewScoreFixed = (data?.interviewScore.toFixed(1) || "0.0");
 
   if (loading)
     return <p className="col-span-12 p-4 text-white">Loading stats...</p>;
 
-  if (error || !data)
-    return (
-      <p className="col-span-12 p-4 text-red-400">Failed to load stats</p>
-    );
+  //if (error || !data)
+    //return (
+      //<p className="col-span-12 p-4 text-red-400">Failed to load stats</p>
+    //);
 
   return (
     <>
@@ -25,21 +35,21 @@ const StatCards = () => {
         title="Resume Score"
         value={`${data.resumeScore} / 100`}
         pillText="Improve by optimizing sections"
-        trend="up"
+        trend={data.resumeScore >= 75 ? "up" : "down"}
         period=""
       />
       <Card
         title="AI Interview Performance"
-        value={`${data.interviewScore} / 5`}
-        pillText="Average score last 5 attempts"
-        trend="up"
+        value={`${interviewScoreFixed} / ${interviewAttempts}`}
+        pillText={ `Average score last ${interviewAttempts} attempts` }
+        trend={data.interviewScore >= 3.5 ? "up" : "down"}
         period=""
       />
       <Card
         title="Learning Progress"
         value={`${data.learningProgress}%`}
-        pillText="Completed 4 / 6 courses"
-        trend="up"
+        pillText={`Completed ${learningCompletedCount} / ${totalCourses} courses`}
+        trend={data.learningProgress > 50 ? "up" : "down"}
         period=""
       />
     </>
@@ -62,7 +72,7 @@ const Card = ({
   period?: string;
 }) => {
   return (
-    <div className="col-span-12 sm:col-span-6 lg:col-span-3 p-5 rounded-xl border border-orange-300/30 shadow-md hover:shadow-orange-400/30 transition-all 
+    <div className=" p-5 rounded-xl border border-orange-300/30 shadow-md hover:shadow-orange-400/30 transition-all 
       bg-gradient-to-br from-[#2c1b0a] via-[#3a230d] to-[#1c1005]">
       <div className="flex mb-6 items-start justify-between">
         <div>

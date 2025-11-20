@@ -16,7 +16,20 @@ const Login = () => {
     try {
       setError('');
       const res = await api.post('/auth/login', { email, password });
-      setUser(res.data.user, res.data.token);
+      console.log("SERVER RESPONSE:", res.data);
+
+      // GET THE TOKEN
+      const token = res.data.token || res.data.accessToken;
+
+      if (!token) {
+        throw new Error("Server did not send a token!");
+      }
+      // 3. Save Token to localStorage
+      localStorage.setItem('jwttoken', token);
+      localStorage.setItem('user', JSON.stringify(res.data.user))
+      // 4. Update State
+      setUser(res.data.user, token);
+      console.log("Token saved to localStorage as 'jwttoken'");
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Login failed:', err);

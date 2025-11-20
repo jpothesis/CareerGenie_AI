@@ -11,11 +11,20 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "./DashboardContext";
 
 export const UsageRadar = () => {
-  const { data } = useDashboard();
-  const usageData = data?.usageStats || [];
+  const { data, loading, error } = useDashboard();
+
+  if (loading) {
+    return (
+      <div className="col-span-8 p-4 rounded border border-orange-300/30 bg-gradient-to-br from-[#2c1b0a] via-[#3a230d] to-[#1c1005]">
+        <p className="text-orange-100">Loading activity graph...</p>
+      </div>
+    );
+  }
+
+  const radarData = data?.usageStats || [];
 
   return (
     <div className="col-span-12 md:col-span-4 overflow-hidden rounded border border-orange-300/30 bg-gradient-to-br from-[#2c1b0a] via-[#3a230d] to-[#1c1005] shadow-md hover:shadow-orange-400/20 transition-all">
@@ -26,20 +35,20 @@ export const UsageRadar = () => {
         <h3 className="font-medium text-base text-orange-100">Usage</h3>
       </div>
 
-      {/* FIXED HEIGHT CHART CONTAINER → prevents -1 width/height error */}
+      {/* FIXED HEIGHT CHART CONTAINER */}
       <div className="w-full h-64 px-4 pb-4">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="75%" data={usageData}>
+          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
             
             <PolarGrid stroke="rgba(255, 255, 255, 0.1)" />
 
-            <PolarAngleAxis 
+            <PolarAngleAxis
               dataKey="feature"
               tick={{ fontSize: 10, fill: "#facc15" }}
             />
 
             <PolarRadiusAxis
-              angle={30}
+              angle={60}
               domain={[0, 150]}
               stroke="rgba(255, 255, 255, 0.2)"
               tick={{ fill: "#facc15", fontSize: 9 }}
@@ -79,6 +88,7 @@ export const UsageRadar = () => {
               wrapperStyle={{ color: "#facc15", fontSize: 12 }}
               iconSize={10}
             />
+
           </RadarChart>
         </ResponsiveContainer>
       </div>
