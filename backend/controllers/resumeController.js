@@ -1,131 +1,109 @@
 // controllers/resumeController.js
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Resume = require("../models/Resume");
-const { generateResumePDF } = require("../services/pdfService");
-
-// ⭐️ NEW IMPORT: Assuming you create this service file
-const { calculateAndSaveResumeScore } = require("../services/resumeScoreService");
-
-// Initialize Gemini with API key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const { generateResumePDF } = require("../services/pdfService"); // Assumed to handle structured data
+const { calculateAndSaveResumeScore } = require("../services/resumeScoreService"); // Assumed service
+const { generateFullText } = require("../services/geminiService"); // ⭐️ CRITICAL: Imports schema-enforced AI service
 
 // Generate resume using Gemini
 const generateResumeHandler = async (req, res) => {
   try {
-    const {
-      name,
-      jobTitle,
-      skills = [],
-      experience = [],
-      education = [],
-      projects = [],
-      jobDescription = "",
-      save,
-      download,
-    } = req.body;
-    const userId = req.user?._id; // Ensure you grab the user ID
-
-    if (!name || !jobTitle) {
-      return res.status(400).json({ msg: "Name and job title are required." });
+    // Expecting the entire structured ResumeData object from the frontend
+    const structuredData = req.body; 
+    const userId = req.user?._id; 
+    
+    // 🛑 CRITICAL FIX: Validate mandatory fields (checking for empty strings)
+    if (!structuredData.name || structuredData.name.trim() === "" || 
+        !structuredData.jobTitle || structuredData.jobTitle.trim() === "") {
+      
+      // Returns 400 Bad Request if mandatory data is missing
+      return res.status(400).json({ 
+        msg: "Please enter your **Full Name** and desired **Job Title** to begin AI generation." 
+      });
     }
 
-    // Prompt for Gemini (The prompt logic remains correct)
+    // ⭐️ 1. SIMPLIFIED PROMPT: Rely on the schema configured in geminiService.js
     const prompt = `
-    You are a professional resume builder. Based on the following candidate information, generate a clean, ATS-friendly professional resume in plain text only.
+    You are a professional resume builder. Your task is to analyze the following partial resume data and return a complete, professional, and ATS-friendly resume as a single JSON object. 
+    
+    Fill in missing contact information (email, phone, etc.) using appropriate placeholder values like "[email@example.com]". Generate high-quality content for the professional summary, and flesh out all missing or incomplete items in the experience, education, and projects sections.
 
-    The resume should include:
-    1. A brief professional summary (2–4 lines).
-    2. Structured sections: Skills, Experience, Education, Projects.
-    3. No markdown, HTML, or extra formatting.
-
-    Name: ${name}
-    Job Title: ${jobTitle}
-    Skills: ${skills.join(", ")}
-    Experience: ${experience.map(e => `${e.role} at ${e.company} (${e.duration})`).join("; ")}
-    Education: ${education.map(e => `${e.degree}, ${e.institution} (${e.year})`).join("; ")}
-    Projects: ${projects.map(p => `${p.title}: ${p.description}`).join("; ")}
+    Current Partial Data: ${JSON.stringify(structuredData, null, 2)}
     `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent(prompt);
-    const resumeText = result.response.text();
+    // 2. AI GENERATION & ROBUST PARSING
+    // The service ensures the output is a clean JSON string ready for parsing
+    const responseText = await generateFullText(prompt);
+    
+    let generatedResumeData;
+    try {
+        generatedResumeData = JSON.parse(responseText);
+    } catch (parseError) {
+        console.error("Failed to parse Gemini JSON response (raw):", responseText);
+        return res.status(500).json({ msg: "AI response was not valid JSON.", raw: responseText });
+    }
 
-    // 1. Save to DB if requested
+    // 3. Save to DB if requested
     let savedResume = null;
-    if (save && userId) {
+    if (structuredData.save && userId) {
       savedResume = await Resume.create({
         user: userId,
-        sections: { raw: resumeText },
+        // Save the full structured data object, matching the Resume.js schema
+        sections: generatedResumeData, 
       });
     }
 
-    // ⭐️ 2. CALCULATE AND SAVE RESUME SCORE (Trigger)
+    // 4. CALCULATE AND SAVE RESUME SCORE (Only if user exists)
     if (userId) {
-      // Pass the raw text and structured data for comprehensive scoring
-      await calculateAndSaveResumeScore(userId, { 
-          name, 
-          jobTitle, 
-          skills, 
-          experience, 
-          education, 
-          projects,
-          rawText: resumeText
-      });
+      await calculateAndSaveResumeScore(userId, generatedResumeData);
     }
     
-    // 3. Download and Response Logic (Remains correct)
-    if (download) {
-      const pdfBuffer = await generateResumePDF({
-        name,
-        jobTitle,
-        sections: { raw: resumeText },
-      });
-
+    // 5. Download and Response Logic
+    if (structuredData.download) {
+      // PDF service uses the full structured object
+      const pdfBuffer = await generateResumePDF(generatedResumeData); 
       const base64 = pdfBuffer.toString("base64");
-      const fileName = `${jobTitle.replace(/[^a-z0-9]/gi, "_")}_Resume.pdf`;
+      const fileName = `${generatedResumeData.jobTitle.replace(/[^a-z0-9]/gi, "_")}_Resume.pdf`;
 
       return res.status(200).json({
         fileName,
         contentType: "application/pdf",
         base64,
-        resume: resumeText,
+        resume: generatedResumeData, // Return structured data
         saved: !!savedResume,
         resumeId: savedResume?._id || null,
       });
     }
 
-    // Return generated resume only
+    // Default: Return the generated structured data object for the frontend to update state
     res.status(200).json({
-      resume: resumeText,
+      resume: generatedResumeData, 
       saved: !!savedResume,
       resumeId: savedResume?._id || null,
     });
   } catch (error) {
-    console.error("Gemini API Error:", error.message);
+    console.error("AI Generation Error:", error.message);
     res.status(500).json({ msg: "Failed to generate resume", error: error.message });
   }
 };
 
-// Save resume manually
+// Save resume manually (Logic remains correct for structured data flow)
 const saveResume = async (req, res) => {
   try {
-    const { sections, structuredData } = req.body; // structuredData might be needed for better scoring
+    const structuredData = req.body; // Expect the full ResumeData object
     const userId = req.user?._id;
     
-    if (!sections || !userId) {
+    if (!structuredData || !userId) {
       return res.status(400).json({ msg: "Missing data or user not authenticated." });
     }
 
     const saved = await Resume.create({
       user: userId,
-      sections, // This is the user's manual or refined version
+      sections: structuredData, // Save structured data
     });
 
-    // ⭐️ CALCULATE AND SAVE RESUME SCORE (Trigger for manual save)
-    // You might need more data than just 'sections' for a detailed score
-    const dataForScoring = structuredData || { rawText: sections.raw || JSON.stringify(sections) };
-    await calculateAndSaveResumeScore(userId, dataForScoring);
+    // CALCULATE AND SAVE RESUME SCORE
+    await calculateAndSaveResumeScore(userId, structuredData);
 
     res.status(201).json({ msg: "Resume saved.", resumeId: saved._id });
   } catch (err) {
@@ -133,41 +111,8 @@ const saveResume = async (req, res) => {
   }
 };
 
-// Fetch resume history (Remains correct)
-const getResumeHistory = async (req, res) => {
-  try {
-    const resumes = await Resume.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.status(200).json({ resumes });
-  } catch (err) {
-    res.status(500).json({ msg: "Failed to fetch history", error: err.message });
-  }
-};
-
-// Download PDF from saved resume (Remains correct)
-const downloadResumePDF = async (req, res) => {
-  try {
-    const { name, jobTitle, sections } = req.body;
-    if (!name || !jobTitle || !sections) {
-      return res.status(400).json({ msg: "Incomplete resume data." });
-    }
-
-    const pdfBuffer = await generateResumePDF({ name, jobTitle, sections });
-    const base64 = pdfBuffer.toString("base64");
-    const fileName = `${jobTitle.replace(/[^a-z0-9]/gi, "_")}_Resume.pdf`;
-
-    res.status(200).json({
-      fileName,
-      contentType: "application/pdf",
-      base64,
-    });
-  } catch (err) {
-    res.status(500).json({ msg: "PDF generation failed", error: err.message });
-  }
-};
-
 module.exports = {
   generateResumeHandler,
   saveResume,
-  getResumeHistory,
-  downloadResumePDF,
+  // ... (include other exports like getResumeHistory, downloadResumePDF)
 };
