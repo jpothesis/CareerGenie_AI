@@ -3,56 +3,137 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ CRITICAL ERROR: GEMINI_API_KEY is missing in .env file.");
 }
+// services/geminiService.js
 
+const { GoogleGenerativeAI, SchemaType } = require("@google/generative-ai");
+
+// Initialize Gemini
+// This will automatically use process.env.GEMINI_API_KEY if available.
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
- * Stream Gemini response chunk-by-chunk
- * @param {string} prompt
+ * ⭐ STRICT JSON SCHEMA for structured resume output
  */
-const generateTextStream = async function* (prompt) {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const resumeSchema = {
+    type: SchemaType.OBJECT,
+    properties: {
+        name: { type: SchemaType.STRING },
+        email: { type: SchemaType.STRING },
+        phone: { type: SchemaType.STRING },
+        location: { type: SchemaType.STRING },
+        jobTitle: { type: SchemaType.STRING },
+        summary: { type: SchemaType.STRING },
 
-    const result = await model.generateContentStream({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-    });
+        skills: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+        languages: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
 
-    for await (const chunk of result.stream) {
-      const chunkText =
-        chunk.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      if (chunkText) yield chunkText;
-    }
-  } catch (error) {
-    console.error("Gemini Streaming API Error:", error.message);
-    throw new Error("Failed to get streaming response from Gemini");
-  }
+        // Experience Section
+        experience: {
+            type: SchemaType.ARRAY,
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    id: { type: SchemaType.STRING },
+                    role: { type: SchemaType.STRING },
+                    company: { type: SchemaType.STRING },
+                    duration: { type: SchemaType.STRING },
+                    description: { type: SchemaType.STRING },
+                },
+                required: ["role", "company", "description"], 
+            },
+        },
+
+        // Education Section
+        education: {
+            type: SchemaType.ARRAY,
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    id: { type: SchemaType.STRING },
+                    degree: { type: SchemaType.STRING },
+                    institution: { type: SchemaType.STRING },
+                    year: { type: SchemaType.STRING },
+                    gpa: { type: SchemaType.STRING },
+                },
+                required: ["degree", "institution", "year"],
+            },
+        },
+
+        // Projects Section
+        projects: {
+            type: SchemaType.ARRAY,
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    id: { type: SchemaType.STRING },
+                    title: { type: SchemaType.STRING },
+                    description: { type: SchemaType.STRING },
+                    techStack: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                    link: { type: SchemaType.STRING },
+                },
+                required: ["title", "description"],
+            },
+        },
+
+        // Certifications Section
+        certifications: {
+            type: SchemaType.ARRAY,
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    id: { type: SchemaType.STRING },
+                    title: { type: SchemaType.STRING },
+                    issuer: { type: SchemaType.STRING },
+                    date: { type: SchemaType.STRING },
+                },
+                required: ["title"],
+            },
+        },
+    },
+
+    required: [
+        "name", "jobTitle", "summary", "skills", "experience", "education",
+    ],
 };
 
 /**
- * Get the full Gemini response as a string
- * @param {string} prompt
- * @returns {Promise<string>}
+ * ⭐ Generate structured resume JSON using Gemini
  */
 const generateFullText = async (prompt) => {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const result = await model.generateContentStream({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-    });
+        const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
 
-    let fullText = "";
-    for await (const chunk of result.stream) {
-      const chunkText =
-        chunk.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      fullText += chunkText;
+            config: { 
+                responseMimeType: "application/json",
+                responseSchema: resumeSchema,
+            },
+        });
+
+        // Basic safety check for content being blocked (e.g., safety filters)
+        if (result.response.promptFeedback && result.response.promptFeedback.blockReason) {
+            throw new Error(`Gemini blocked the prompt: ${result.response.promptFeedback.blockReason}`);
+        }
+        
+        // Ensure non-empty response
+        const responseText = result.response.text.trim();
+        if (!responseText) {
+            throw new Error("Gemini returned an empty response text.");
+        }
+
+        return responseText;
+
+    } catch (error) {
+        // Catch and rethrow explicit API errors for the controller to handle.
+        console.error("Gemini Structured Output Error:", error.message);
+        throw new Error(
+            "Gemini API Call Failed: " + error.message
+        );
     }
-    return fullText.trim();
-  } catch (error) {
-    console.error("Gemini Streaming API Error:", error.message);
-    throw new Error("Failed to get full response from Gemini");
-  }
 };
 
-module.exports = { generateTextStream, generateFullText };
+module.exports = {
+    generateFullText,
+};
