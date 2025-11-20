@@ -1,5 +1,10 @@
 // controllers/resumeController.js
+<<<<<<< HEAD
 
+=======
+const logActivity = require('../utils/activityLogger');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+>>>>>>> 2075a41fa93bc6f18dcd92327f312767564c28de
 const Resume = require("../models/Resume");
 const { generateResumePDF } = require("../services/pdfService"); // Assumed to handle structured data
 const { calculateAndSaveResumeScore } = require("../services/resumeScoreService"); // Assumed service
@@ -43,7 +48,16 @@ const generateResumeHandler = async (req, res) => {
         return res.status(500).json({ msg: "AI response was not valid JSON.", raw: responseText });
     }
 
+<<<<<<< HEAD
     // 3. Save to DB if requested
+=======
+    // LOG ACTIVITY: Log resume generation activity
+    if (userId) {
+      await logActivity(userId, 'resume_generation', 'Generated AI Resume', req);
+  }
+
+    // 1. Save to DB if requested
+>>>>>>> 2075a41fa93bc6f18dcd92327f312767564c28de
     let savedResume = null;
     if (structuredData.save && userId) {
       savedResume = await Resume.create({

@@ -1,13 +1,10 @@
 // controllers/interviewController.js
-
+const logActivity = require('../utils/activityLogger');
 const InterviewSession = require("../models/InterviewSession");
 const { generateTextStream, generateFullText } = require("../services/geminiService");
-
-// ⭐️ NEW IMPORT: Assuming this service handles saving the final score to InterviewAttempt model
 const { saveInterviewAttemptScore } = require("../services/interviewAttemptService");
 
 function buildQuestionPrompt({ role, seniority, jdText, resumeText, askedSoFar, previousAnswers, nextIndex }) {
-  // ... (buildQuestionPrompt remains the same)
   return `
 You are acting as an interviewer for a ${seniority} ${role} position.
 
@@ -25,7 +22,6 @@ Do NOT include any extra text — only the question.
 }
 
 function buildFeedbackPrompt({ role, seniority, question, answer, jdText, resumeText, durationSec }) {
-  // ... (buildFeedbackPrompt remains the same)
   return `
 You are an interview evaluator.
 
@@ -47,7 +43,6 @@ Keep it concise but constructive.
 }
 
 function buildSummaryPrompt({ role, seniority, turns }) {
-  // ... (buildSummaryPrompt remains the same)
   return `
 Summarize the candidate's interview for a ${seniority} ${role} role.
 
@@ -61,7 +56,7 @@ Provide:
 `;
 }
 
-// ⭐️ CORRECTION: Changed from exports.startInterview to const startInterview
+//  CORRECTION: Changed from exports.startInterview to const startInterview
 const startInterview = async (req, res, next) => {
   try {
     const { role, seniority = "junior", numQuestions = 8, jdText = "", resumeText = "" } = req.body;
@@ -94,7 +89,7 @@ const startInterview = async (req, res, next) => {
   }
 };
 
-// ⭐️ CORRECTION: Changed from exports.submitAnswer to const submitAnswer
+// submitAnswer with SSE
 const submitAnswer = async (req, res, next) => {
   const { sessionId } = req.params;
   const { answerText } = req.body;
@@ -168,7 +163,7 @@ const submitAnswer = async (req, res, next) => {
       await session.save();
       res.write(`data: ${JSON.stringify({ nextQuestion: nextQ })}\n\n`);
     } else {
-      // ⭐️ If the interview is done, signal the client
+      //  If the interview is done, signal the client
       res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     }
   } catch (err) {
@@ -178,7 +173,7 @@ const submitAnswer = async (req, res, next) => {
   }
 };
 
-// ⭐️ CORRECTION: Changed from exports.endInterview to const endInterview
+// endInterview
 const endInterview = async (req, res, next) => {
     try {
         const { sessionId } = req.params;
@@ -201,9 +196,17 @@ const endInterview = async (req, res, next) => {
         // Convert to 0-5 scale for the InterviewAttempt model (as per dashboard card)
         const finalScoreOutOfFive = (sessionAverageScore / 2).toFixed(1);
 
-        // ⭐️ Save the final result to the InterviewAttempt model
+        //  Save the final result to the InterviewAttempt model
         await saveInterviewAttemptScore(userId, finalScoreOutOfFive, session.role, sessionId);
         
+        //  Log the activity
+        await logActivity(
+          userId, 
+          'ai_interview', 
+          `Completed Mock Interview for ${session.role} (Score: ${finalScoreOutOfFive}/5)`, 
+          req
+      );
+
         // Optionally update the session status to 'completed'
         session.status = 'completed';
         await session.save();
@@ -220,7 +223,7 @@ const endInterview = async (req, res, next) => {
 };
 
 
-// ⭐️ CORRECTION: Changed from exports.getSummary to const getSummary
+// summary generation
 const getSummary = async (req, res, next) => {
   try {
     const { sessionId } = req.params;
@@ -235,7 +238,6 @@ const getSummary = async (req, res, next) => {
       })
     );
     
-    // We already saved the final score in endInterview, so we can just return the summary
     res.json({ summary });
   } catch (err) {
     next(err);

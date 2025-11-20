@@ -13,7 +13,6 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
-const appliedJobRoutes = require("./routes/appliedJobRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
 const jobRoutes = require("./routes/jobRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
@@ -37,7 +36,6 @@ app.use(express.json());
 // Mount Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
-app.use("/api/applied-jobs", appliedJobRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/analytics", analyticsRoutes);
