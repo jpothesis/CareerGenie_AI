@@ -1,5 +1,9 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
+if (!process.env.GEMINI_API_KEY) {
+  console.error("❌ CRITICAL ERROR: GEMINI_API_KEY is missing in .env file.");
+}
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
