@@ -1,11 +1,36 @@
+// routes/profileRoutes.js
+
 const express = require("express");
-const { getMyProfile, upsertProfile, getProfileByUserId } = require("../controllers/profileController");
-const { protect } = require("../middleware/authMiddleware");
+const {
+  // 🔑 Double-check that all three of these functions are correctly exported 
+  // and the path to profileController is correct.
+  getMyProfile,
+  upsertProfile,
+  getProfileByUserId
+} = require("../controllers/profileController"); 
+
+const { 
+  // 🔑 Double-check that 'protect' is correctly exported 
+  // and the path to authMiddleware is correct.
+  protect 
+} = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/me", protect, getMyProfile);       // Get own profile
-router.post("/", protect, upsertProfile);       // Create or update profile
-router.get("/user/:userId", getProfileByUserId); // Public view of profile
+// @route   GET /api/profile/me
+// @desc    Get logged-in user's profile
+// @access  Private
+// Line 14 is likely here: If getMyProfile or protect is undefined, the server crashes.
+router.get("/me", protect, getMyProfile);
+
+// @route   POST /api/profile
+// @desc    Create or update logged-in user's profile
+// @access  Private
+router.post("/", protect, upsertProfile);
+
+// @route   GET /api/profile/user/:userId
+// @desc    Get profile by user ID (public)
+// @access  Public
+router.get("/user/:userId", getProfileByUserId);
 
 module.exports = router;

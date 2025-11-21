@@ -1,13 +1,13 @@
-// Load environment variables
-const dotenv = require("dotenv");
-dotenv.config();
+// Load env variables
+require("dotenv").config();
 
-// Core dependencies
+// Core
 const express = require("express");
 const cors = require("cors");
 
-// Custom modules
-const connectDB = require("./config/db");
+// DB + Middlewares
+const connectDB = require('./config/db');
+
 const { errorHandler } = require("./middleware/errorMiddleware");
 
 // Routes
@@ -20,20 +20,16 @@ const careerAdvisorRoutes = require("./routes/careerAdvisorRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 
-// Initialize Express app
 const app = express();
 
-// Connect to MongoDB
+// Connect to DB
 connectDB();
 
 // Middleware
-app.use(cors({
-  origin: "*",
-  credentials: true,
-}));
+app.use(cors({ origin: "*", credentials: true }));
 app.use(express.json());
 
-// Mount Routes
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/resume", resumeRoutes);
@@ -43,7 +39,7 @@ app.use("/api/career", careerAdvisorRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/profile", profileRoutes);
 
-// Health check/test route
+// Test route
 app.get("/api/test", (req, res) => {
   res.status(200).json({ message: "API is working" });
 });
@@ -54,5 +50,5 @@ app.use(errorHandler);
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(` Server running at http://localhost:${PORT}`);
+  console.log(`SERVER RUNNING → http://localhost:${PORT}`);
 });
