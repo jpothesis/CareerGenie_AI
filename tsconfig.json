@@ -14,7 +14,6 @@
     "types": ["react", "react-dom"],
     "strict": true,
     "composite": true,
-    "ignoreDeprecations": "6.0",
     "noEmit": false,
     "skipLibCheck": true,
     "baseUrl": "./src",
