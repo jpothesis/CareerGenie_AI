@@ -13,6 +13,20 @@ const INTERVIEW_TYPES = [
 
 const SENIORITY_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Executive"];
 
+const LIVE_BACKEND_URL = "https://careergenie-ai.onrender.com"; 
+const DEPLOY_VERSION = "v5.0 - FINAL CONNECT";
+
+const getApiUrl = (endpoint: string) => {
+  // If running locally, use the relative path (Vite proxy handles it)
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return endpoint;
+  }
+  // If running in production (Vercel), use the full backend URL
+  // We remove trailing slashes to avoid double //
+  const baseUrl = LIVE_BACKEND_URL.replace(/\/$/, "");
+  return `${baseUrl}${endpoint}`;
+};
+
 const AIInterviews = () => {
   const [form, setForm] = useState({
     role: "",
@@ -33,6 +47,11 @@ const AIInterviews = () => {
   const [submitting, setSubmitting] = useState(false);
   const [interviewDone, setInterviewDone] = useState(false);
   const feedbackRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    console.log(`🚀 FRONTEND VERSION: ${DEPLOY_VERSION}`);
+    console.log(`🔌 CONNECTED TO BACKEND: ${getApiUrl("/")}`);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -66,7 +85,9 @@ const AIInterviews = () => {
         return;
       }
 
-      const res = await axios.post("/api/interview/start", form, {
+      const url = getApiUrl("/api/interview/start");
+      
+      const res = await axios.post(url, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -106,7 +127,9 @@ const AIInterviews = () => {
 
     try {
       // 2. ATTACH HEADER HERE (Fetch API)
-      const response = await fetch(`/api/interview/answer/${sessionId}`, {
+      const url = getApiUrl(`/api/interview/answer/${sessionId}`);
+
+      const response = await fetch(url, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -181,17 +204,12 @@ const AIInterviews = () => {
       headers: { Authorization: `Bearer ${token}` }
     };
     try {
-      const endRes = await axios.post(
-        `/api/interview/${sessionId}/end`, 
-        {},     
-        config  
-      );
+      const endUrl = getApiUrl(`/api/interview/${sessionId}/end`);
+      const endRes = await axios.post(endUrl, {}, config);
       setFeedback((prev) => prev + `\n\n✅ Final Score Saved! (Average: ${endRes.data.finalScore} / 5)\n\n`);
 
-      const summaryRes = await axios.get(
-        `/api/interview/summary/${sessionId}`, 
-        config
-      );
+      const summaryUrl = getApiUrl(`/api/interview/summary/${sessionId}`);
+      const summaryRes = await axios.get(summaryUrl, config);
       setFeedback((prev) => prev.replace("(Fetching detailed summary...)\n", "") + summaryRes.data.summary);
         
     } catch (err) {

@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+      {
+        "source": "/api/:match*",
+        "destination": "https://careergenie-ai.onrender.com/api/:match*"
+      }
+    ]
+  }
