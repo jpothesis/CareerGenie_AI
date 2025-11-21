@@ -3,8 +3,11 @@ import React, { useState, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import html2pdf from "html2pdf.js";
 
-// 1. IMPORT TYPES from src/resume.ts
-// Assuming your path is src/pages/Dashboard/ResumeBuilder.tsx -> src/resume.ts
+// 1. Import the real API function and necessary icons
+import { fetchAIGeneratedData } from "../../api/resumeService"; // <<< CHECK THIS PATH >>>
+import { Loader2, AlertTriangle } from "lucide-react";
+
+// 2. IMPORT TYPES from src/resume.ts
 import type {
   ResumeData,
   Experience,
@@ -13,8 +16,7 @@ import type {
   Certification,
 } from "../../components/resume";
 
-
-// 2. IMPORT STYLED TEMPLATES from src/components/ResumeTemplates
+// 3. IMPORT STYLED TEMPLATES from src/components/ResumeTemplates
 import TemplateModern from "../../components/ResumeTemplates/TemplateModern";
 import TemplateProfessional from "../../components/ResumeTemplates/TemplateClassic";
 import TemplateCreative from "../../components/ResumeTemplates/TemplateCreative";
@@ -41,7 +43,7 @@ const TEMPLATE_COMPONENTS = {
   minimal: TemplateMinimal,
 };
 
-// Template Renderer Component
+// Template Renderer Component (Unchanged)
 interface TemplateRendererProps {
   templateId: string;
   data: ResumeData;
@@ -69,8 +71,7 @@ const TemplateRenderer: React.FC<TemplateRendererProps> = React.forwardRef(({
 TemplateRenderer.displayName = 'TemplateRenderer';
 
 
-// --- INITIAL DATA & CONSTANTS ---
-// We use the imported types here
+// --- INITIAL DATA & CONSTANTS (Unchanged) ---
 const INITIAL_RESUME_DATA: ResumeData = { name: "", email: "", phone: "", location: "", jobTitle: "", summary: "", skills: [], experience: [], education: [], projects: [], certifications: [], languages: [], };
 
 const TEMPLATES = [
@@ -89,65 +90,11 @@ const SECTIONS = [
   { id: "additional", label: "Certifications & Languages" },
 ];
 
-// --- FAKE AI GENERATION MOCK ---
-const mockAIGeneratedData: ResumeData = {
-  name: "Jaarvi Sharma",
-  email: "jaarvi@uw-ac.in",
-  phone: "(555) 123-4567",
-  location: "New Delhi, India",
-  jobTitle: "Senior Full-Stack Developer",
-  summary:
-    "Highly motivated and result-oriented Senior Full-Stack Developer with 5+ years of experience building scalable, high-performance web applications using React, Node.js, and modern cloud infrastructures. Proven ability to lead projects and mentor junior developers.",
-  skills: ["React", "Node.js", "TypeScript", "PostgreSQL", "AWS", "Docker", "Kubernetes", "CI/CD"],
-  experience: [
-    {
-      id: "exp1",
-      role: "Lead Software Engineer",
-      company: "Innovatech Solutions",
-      duration: "Jan 2022 - Present",
-      description:
-        "Led a team of 4 engineers to develop and deploy a next-gen CRM platform, improving client retention by 15%. Architected a microservices backbone using Node.js and deployed via AWS ECS.",
-    },
-    {
-      id: "exp2",
-      role: "Full-Stack Developer",
-      company: "WebCraft Labs",
-      duration: "Jul 2019 - Dec 2021",
-      description:
-        "Developed and maintained core features for high-traffic e-commerce sites, responsible for both front-end (React/Redux) and back-end (Express/MongoDB) systems.",
-    },
-  ],
-  education: [
-    {
-      id: "edu1",
-      degree: "B.Tech in Computer Science",
-      institution: "Indian Institute of Technology (IIT)",
-      year: "2015 - 2019",
-      gpa: "9.2/10.0",
-    },
-  ],
-  projects: [
-    {
-      id: "proj1",
-      title: "AI Resume Optimizer",
-      description:
-        "A web application built using Next.js and Tailwind CSS that uses a custom language model to optimize resume content for specific job descriptions.",
-      techStack: ["Next.js", "Tailwind CSS", "LLM APIs"],
-      link: "github.com/jaarvi/optimizer",
-    },
-  ],
-  certifications: [
-    {
-      id: "cert1",
-      title: "AWS Certified Solutions Architect – Associate",
-      issuer: "Amazon Web Services",
-      date: "Mar 2023",
-    },
-  ],
-  languages: ["English (Native)", "Hindi (Fluent)"],
-};
+// --- MOCK DATA REMOVED ---
+// The mockAIGeneratedData constant is now removed and replaced by the API call.
 
-// --- SMALL REUSABLE FIELDS (UNCHANGED) ---
+
+// --- SMALL REUSABLE FIELDS (Unchanged) ---
 interface InputFieldProps { label: string; value: string; onChange: (value: string) => void; type?: string; placeholder?: string; }
 const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, type = "text", placeholder }) => (
   <div className="space-y-1">
@@ -176,7 +123,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({ label, value, onChange, p
   </div>
 );
 
-// Skill input section
+// Skill input section (Unchanged)
 interface SkillInputSectionProps { label: string; items: string[]; setInput: Dispatch<SetStateAction<string>>; input: string; addItem: () => void; removeItem: (index: number) => void; }
 const SkillInputSection: React.FC<SkillInputSectionProps> = ({ label, items, setInput, input, addItem, removeItem }) => (
   <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-xl shadow-orange-400/20">
@@ -211,7 +158,7 @@ const SkillInputSection: React.FC<SkillInputSectionProps> = ({ label, items, set
   </div>
 );
 
-// Experience section (simplified props)
+// Experience section (Unchanged)
 interface ExperienceSectionProps { experience: Experience[]; updateExperience: (id: string, field: string, value: string) => void; removeExperience: (id: string) => void; addExperience: () => void; }
 const ExperienceSection: React.FC<ExperienceSectionProps> = ({ experience, updateExperience, removeExperience, addExperience }) => (
   <div className="space-y-4">
@@ -240,7 +187,7 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({ experience, updat
   </div>
 );
 
-// Education Section
+// Education Section (Unchanged)
 interface EducationSectionProps { education: Education[]; updateEducation: (id: string, field: string, value: string) => void; removeEducation: (id: string) => void; addEducation: () => void; }
 const EducationSection: React.FC<EducationSectionProps> = ({ education, updateEducation, removeEducation, addEducation }) => (
   <div className="space-y-4">
@@ -271,7 +218,7 @@ const EducationSection: React.FC<EducationSectionProps> = ({ education, updateEd
   </div>
 );
 
-// Projects Section (Refactored to take all state handlers as props)
+// Projects Section (Unchanged)
 interface ProjectsSectionProps { projects: Project[]; updateProject: (id: string, field: keyof Project, value: any) => void; removeProject: (id: string) => void; addProject: () => void; }
 const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects, updateProject, removeProject, addProject }) => {
   return (
@@ -311,11 +258,15 @@ const ResumeBuilder: React.FC = () => {
   const [languageInput, setLanguageInput] = useState<string>("");
   const [preview, setPreview] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>("personal");
+  
+  // New state for API integration
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Ref to target the template component for PDF conversion
   const resumeRef = useRef<HTMLDivElement>(null);
 
-  // Generic update helper for string fields
+  // Generic update helper for string fields (Unchanged)
   const updateResumeField = (field: keyof Omit<ResumeData, 'experience' | 'education' | 'projects' | 'certifications' | 'skills' | 'languages'>, value: string) => {
     setResume((prev) => ({ ...prev, [field]: value }));
   };
@@ -331,7 +282,7 @@ const ResumeBuilder: React.FC = () => {
     setResume((prev) => ({ ...prev, [field]: (prev[field] as string[]).filter((_, i) => i !== index) }));
   };
 
-  // Generic add/update/remove for block-level sections (Experience, Education, Project, Certification)
+  // Generic add/update/remove for block-level sections (Unchanged)
   const addBlock = (field: 'experience' | 'education' | 'projects' | 'certifications', newBlock: Partial<Experience | Education | Project | Certification>) => {
     setResume((prev) => ({ ...prev, [field]: [...(prev[field] as any[]), { ...newBlock, id: Date.now().toString() }] }));
   };
@@ -344,9 +295,38 @@ const ResumeBuilder: React.FC = () => {
     setResume((prev) => ({ ...prev, [field]: (prev[field] as any[]).filter((item) => item.id !== id) }));
   };
 
-  const generateWithAI = () => setResume(mockAIGeneratedData);
+  // --- UPDATED AI GENERATION LOGIC ---
+// Inside ResumeBuilder.tsx -> generateWithAI function
+const generateWithAI = async () => {
+  setIsLoading(true);
+  setError(null);
 
-  // --- PDF DOWNLOAD LOGIC ---
+  try {
+    // 🔥 send full resume data to backend
+    const generatedData = await fetchAIGeneratedData(resume);
+
+    // Additional safety check
+    if (!generatedData || typeof generatedData !== "object") {
+      throw new Error("AI returned invalid formatted data.");
+    }
+
+    if (!generatedData.name) {
+      console.warn("AI Missing name field: ", generatedData);
+    }
+
+    // 🔥 Update UI safely
+    setResume((prev) => ({
+      ...prev,
+      ...generatedData,
+    }));
+  } catch (err: any) {
+    setError(err.message || "Failed to generate resume.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  // --- PDF DOWNLOAD LOGIC (Unchanged) ---
   const handleDownload = () => {
     if (resumeRef.current) {
       const filename = `${resume.name.replace(/\s/g, "_") || "User"}_Resume_${template}.pdf`;
@@ -357,7 +337,7 @@ const ResumeBuilder: React.FC = () => {
           margin: 0.5,
           filename: filename,
           image: {
-              type: 'jpeg' as const, // Fixed type error using 'as const'
+              type: 'jpeg' as const, 
               quality: 0.98
           },
           html2canvas: {
@@ -379,7 +359,7 @@ const ResumeBuilder: React.FC = () => {
 
   const { name, email, phone, location, jobTitle, summary, skills, experience, education, projects, certifications, languages } = resume;
 
-  // Render active section
+  // Render active section (Unchanged)
   const renderActiveSection = (): React.ReactElement | null => {
     switch (activeSection) {
       case "personal":
@@ -415,14 +395,14 @@ const ResumeBuilder: React.FC = () => {
             updateProject={(id, f, v) => updateBlock("projects", id, f as string, v)}
             removeProject={(id) => removeBlock("projects", id)}
             addProject={() =>
-  addBlock("projects", {
-    id: crypto.randomUUID(), // Generates a unique ID
-    title: "",
-    description: "",
-    techStack: [],
-    link: "",
-  })
-}
+              addBlock("projects", {
+                id: crypto.randomUUID(), // Generates a unique ID
+                title: "",
+                description: "",
+                techStack: [],
+                link: "",
+              })
+            }
           />
         );
       case "additional":
@@ -482,13 +462,34 @@ const ResumeBuilder: React.FC = () => {
               {!preview ? <Eye className="h-4 w-4" /> : <Code className="h-4 w-4" />} {!preview ? "Preview" : "Edit"}
             </button>
 
-            <button onClick={generateWithAI} className="gap-2 flex items-center justify-center p-3 rounded-lg font-bold bg-gradient-to-r from-orange-500 to-yellow-500 text-black hover:from-orange-600 hover:to-yellow-600 shadow-lg shadow-orange-500/30 transition-all">
-              <Wand2 className="h-4 w-4 animate-pulse" /> Generate with AI
+            {/* UPDATED: Loading/Disable state for AI Button */}
+            <button 
+              onClick={generateWithAI} 
+              disabled={isLoading} 
+              className={`gap-2 flex items-center justify-center p-3 rounded-lg font-bold transition-all ${isLoading ? "bg-gray-600 cursor-not-allowed" : "bg-gradient-to-r from-orange-500 to-yellow-500 text-black hover:from-orange-600 hover:to-yellow-600 shadow-lg shadow-orange-500/30"}`}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Generating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4" /> Generate with AI
+                </>
+              )}
             </button>
           </div>
         </div>
+        
+        {/* New: Error Message Display */}
+        {error && (
+            <div className="flex items-center gap-2 p-3 mb-6 bg-red-800/50 border border-red-500 text-red-300 rounded-lg shadow-xl">
+                <AlertTriangle className="h-5 w-5" />
+                <p className="font-medium text-sm">{error}</p>
+            </div>
+        )}
 
-        {/* Template Selection */}
+        {/* Template Selection (Unchanged) */}
         <div className="mb-8 p-4 rounded-xl bg-black/40 border border-white/10 shadow-inner">
           <label className="block text-sm font-semibold text-orange-400 mb-3">Choose Template</label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -514,12 +515,12 @@ const ResumeBuilder: React.FC = () => {
               </div>
               {/* Content area is now inside the scrolling container */}
               <div className="space-y-6">
-                 {renderActiveSection()}
+                  {renderActiveSection()}
               </div>
             </div>
           )}
 
-          {/* Preview Column */}
+          {/* Preview Column (Unchanged) */}
           <div className={`${preview ? "lg:col-span-3" : "lg:col-span-1"}`}>
             {/* The sticky behavior will now align better with the scrollable input panel */}
             <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/10 sticky top-4 shadow-xl shadow-orange-400/20">

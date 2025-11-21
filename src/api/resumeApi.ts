@@ -1,12 +1,12 @@
 // src/api/resumeApi.ts
 import axios from "axios";
 
-// ✅ Create Axios instance with base URL
+// 🔥 Create Axios instance
 const api = axios.create({
-  baseURL: "https://careergenie-ai.onrender.com/api", // adjust if needed
+  baseURL: "https://careergenie-ai.onrender.com/api",
 });
 
-// ✅ Automatically attach Authorization header
+// 🔥 Attach JWT token automatically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -15,9 +15,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Resume API endpoints
 const API_URL = "/resume";
 
+// --- RESUME API ENDPOINTS ---
 export const generateResume = async (data: any) => {
   const res = await api.post(`${API_URL}/generate`, data);
   return res.data;
@@ -35,7 +35,7 @@ export const getResumeHistory = async () => {
 
 export const downloadResume = async (data: any) => {
   const res = await api.post(`${API_URL}/download`, data, {
-    responseType: "blob", // ✅ for PDF file
+    responseType: "blob",
   });
   return res.data;
 };
