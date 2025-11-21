@@ -13,6 +13,19 @@ const INTERVIEW_TYPES = [
 
 const SENIORITY_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Executive"];
 
+const LIVE_BACKEND_URL = "https://careergenie-ai.onrender.com"; 
+
+const getApiUrl = (endpoint: string) => {
+  // If running locally, use the relative path (Vite proxy handles it)
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return endpoint;
+  }
+  // If running in production (Vercel), use the full backend URL
+  // We remove trailing slashes to avoid double //
+  const baseUrl = LIVE_BACKEND_URL.replace(/\/$/, "");
+  return `${baseUrl}${endpoint}`;
+};
+
 const AIInterviews = () => {
   const [form, setForm] = useState({
     role: "",
@@ -66,7 +79,9 @@ const AIInterviews = () => {
         return;
       }
 
-      const res = await axios.post("/api/interview/start", form, {
+      const url = getApiUrl("/api/interview/start");
+      
+      const res = await axios.post(url, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -106,7 +121,9 @@ const AIInterviews = () => {
 
     try {
       // 2. ATTACH HEADER HERE (Fetch API)
-      const response = await fetch(`/api/interview/answer/${sessionId}`, {
+      const url = getApiUrl(`/api/interview/answer/${sessionId}`);
+
+      const response = await fetch(url, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
