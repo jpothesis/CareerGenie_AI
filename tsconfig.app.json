@@ -32,6 +32,7 @@
     },
 
     /* React + Node type support */
+    "ignoreDeprecations": "6.0",
     "types": ["react", "react-dom", "node"]
   },
   "include": ["src", "components"]
