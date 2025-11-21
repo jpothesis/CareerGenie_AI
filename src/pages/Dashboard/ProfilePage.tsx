@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import axios from "axios";
 import bgImage from "../../assets/background.png";
 import { FaUserEdit, FaSave, FaSpinner } from 'react-icons/fa';
-import ProfilePreview from "./ProfilePreview"; // New Component
-import ProfileForm from "./ProfileForm"; // New Component
+import ProfilePreview from "../../components/ProfilePreview";
+import ProfileForm from "../../components/ProfileForm";
 
 // Define the shape of the form state
 interface FormState {

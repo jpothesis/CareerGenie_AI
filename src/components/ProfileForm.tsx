@@ -1,6 +1,6 @@
 import React from 'react';
-import InputField from "../../components/InputField";
-import TextAreaField from "../../components/TextAreaField";
+import InputField from "./InputField";
+import TextAreaField from "./TextAreaField";
 import {
   FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaLink,
   FaImage, FaLaptopCode, FaStar, FaQuoteLeft, FaGlobe, FaGithub, FaLinkedin
