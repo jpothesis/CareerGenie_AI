@@ -14,6 +14,7 @@ const INTERVIEW_TYPES = [
 const SENIORITY_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Executive"];
 
 const LIVE_BACKEND_URL = "https://careergenie-ai.onrender.com"; 
+const DEPLOY_VERSION = "v5.0 - FINAL CONNECT";
 
 const getApiUrl = (endpoint: string) => {
   // If running locally, use the relative path (Vite proxy handles it)
@@ -46,6 +47,11 @@ const AIInterviews = () => {
   const [submitting, setSubmitting] = useState(false);
   const [interviewDone, setInterviewDone] = useState(false);
   const feedbackRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    console.log(`🚀 FRONTEND VERSION: ${DEPLOY_VERSION}`);
+    console.log(`🔌 CONNECTED TO BACKEND: ${getApiUrl("/")}`);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -201,7 +207,7 @@ const AIInterviews = () => {
       const endUrl = getApiUrl(`/api/interview/${sessionId}/end`);
       const endRes = await axios.post(endUrl, {}, config);
       setFeedback((prev) => prev + `\n\n✅ Final Score Saved! (Average: ${endRes.data.finalScore} / 5)\n\n`);
-      
+
       const summaryUrl = getApiUrl(`/api/interview/summary/${sessionId}`);
       const summaryRes = await axios.get(summaryUrl, config);
       setFeedback((prev) => prev.replace("(Fetching detailed summary...)\n", "") + summaryRes.data.summary);
