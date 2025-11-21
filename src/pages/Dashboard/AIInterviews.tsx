@@ -52,13 +52,23 @@ const AIInterviews = () => {
     setInterviewDone(false);
     setCurrentQuestion("");
 
+    const token = localStorage.getItem("jwttoken"); 
+
+    if (!token) {
+      setFeedback("❌ No authentication token found. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
     try {
       if (!form.role.trim()) {
         setFeedback("❌ Please enter a **Role** to start the interview.");
         return;
       }
 
-      const res = await axios.post("/api/interview/start", form);
+      const res = await axios.post("/api/interview/start", form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (res.data.sessionId && res.data.question) {
         setSessionId(res.data.sessionId);
@@ -81,6 +91,13 @@ const AIInterviews = () => {
   const submitAnswer = async () => {
     if (!sessionId || !answer.trim() || submitting) return;
 
+    // 1. GET TOKEN
+    const token = localStorage.getItem("jwttoken");
+    if (!token) {
+      setFeedback("\n\n❌ Session expired. Please log in again.");
+      return;
+    }
+
     setSubmitting(true);
     const answerText = answer.trim();
 
@@ -88,9 +105,13 @@ const AIInterviews = () => {
     setAnswer("");
 
     try {
+      // 2. ATTACH HEADER HERE (Fetch API)
       const response = await fetch(`/api/interview/answer/${sessionId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` 
+        },
         body: JSON.stringify({ answerText }),
       });
 
@@ -153,12 +174,26 @@ const AIInterviews = () => {
   };
 
   const finalizeInterview = async (sessionId: string) => {
+    const token = localStorage.getItem("jwttoken");
+    
+    // 2. Prepare the config object
+    const config = {
+      headers: { Authorization: `Bearer ${token}` }
+    };
     try {
-      const endRes = await axios.post(`/api/interview/${sessionId}/end`);
+      const endRes = await axios.post(
+        `/api/interview/${sessionId}/end`, 
+        {},     
+        config  
+      );
       setFeedback((prev) => prev + `\n\n✅ Final Score Saved! (Average: ${endRes.data.finalScore} / 5)\n\n`);
 
-      const summaryRes = await axios.get(`/api/interview/summary/${sessionId}`);
-      setFeedback(summaryRes.data.summary);
+      const summaryRes = await axios.get(
+        `/api/interview/summary/${sessionId}`, 
+        config
+      );
+      setFeedback((prev) => prev.replace("(Fetching detailed summary...)\n", "") + summaryRes.data.summary);
+        
     } catch (err) {
       console.error("Error finalizing or getting summary:", err);
       setFeedback((prev) => prev + "\n\n❌ **CRITICAL ERROR:** Failed to finalize interview or fetch final summary.");
