@@ -5,7 +5,7 @@ import api from "./api";
 //  withCredentials: true, // optional: only needed if you're using auth/cookies
 //});
 
-export const fetchJobs = () => api.get("/");
-export const createJob = (jobData: any) => api.post("/", jobData);
-export const updateJob = (id: string, jobData: any) => api.put(`/${id}`, jobData);
-export const deleteJob = (id: string) => api.delete(`/${id}`);
+export const fetchJobs = () => api.get("/jobs");
+export const createJob = (jobData: any) => api.post("/jobs", jobData);
+export const updateJob = (id: string, jobData: any) => api.put(`/jobs/${id}`, jobData);
+export const deleteJob = (id: string) => api.delete(`/jobs/${id}`);
