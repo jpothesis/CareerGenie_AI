@@ -198,17 +198,12 @@ const AIInterviews = () => {
       headers: { Authorization: `Bearer ${token}` }
     };
     try {
-      const endRes = await axios.post(
-        `/api/interview/${sessionId}/end`, 
-        {},     
-        config  
-      );
+      const endUrl = getApiUrl(`/api/interview/${sessionId}/end`);
+      const endRes = await axios.post(endUrl, {}, config);
       setFeedback((prev) => prev + `\n\n✅ Final Score Saved! (Average: ${endRes.data.finalScore} / 5)\n\n`);
-
-      const summaryRes = await axios.get(
-        `/api/interview/summary/${sessionId}`, 
-        config
-      );
+      
+      const summaryUrl = getApiUrl(`/api/interview/summary/${sessionId}`);
+      const summaryRes = await axios.get(summaryUrl, config);
       setFeedback((prev) => prev.replace("(Fetching detailed summary...)\n", "") + summaryRes.data.summary);
         
     } catch (err) {
