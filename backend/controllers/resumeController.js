@@ -4,8 +4,83 @@ const logActivity = require("../utils/activityLogger");
 const Resume = require("../models/Resume");
 const { generateResumePDF } = require("../services/pdfService");
 const { calculateAndSaveResumeScore } = require("../services/resumeScoreService");
-const { generateFullText } = require("../services/geminiService");
+const { generateStructuredData, SchemaType } = require("../services/geminiService"); // Import generic service
 const crypto = require("crypto");
+
+// ------------------------------
+// 1. DEFINE RESUME SCHEMA 
+// ------------------------------
+const resumeSchema = {
+    type: SchemaType.OBJECT,
+    properties: {
+        name: { type: SchemaType.STRING },
+        email: { type: SchemaType.STRING },
+        phone: { type: SchemaType.STRING },
+        location: { type: SchemaType.STRING },
+        jobTitle: { type: SchemaType.STRING },
+        summary: { type: SchemaType.STRING },
+
+        skills: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+        languages: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+
+        experience: {
+            type: SchemaType.ARRAY,
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    role: { type: SchemaType.STRING },
+                    company: { type: SchemaType.STRING },
+                    duration: { type: SchemaType.STRING },
+                    description: { type: SchemaType.STRING },
+                },
+                required: ["role", "company", "description"], 
+            },
+        },
+
+        education: {
+            type: SchemaType.ARRAY,
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    degree: { type: SchemaType.STRING },
+                    institution: { type: SchemaType.STRING },
+                    year: { type: SchemaType.STRING },
+                    gpa: { type: SchemaType.STRING },
+                },
+                required: ["degree", "institution"],
+            },
+        },
+
+        projects: {
+            type: SchemaType.ARRAY,
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    title: { type: SchemaType.STRING },
+                    description: { type: SchemaType.STRING },
+                    techStack: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                    link: { type: SchemaType.STRING },
+                },
+                required: ["title", "description"],
+            },
+        },
+        
+        certifications: {
+            type: SchemaType.ARRAY,
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    title: { type: SchemaType.STRING },
+                    issuer: { type: SchemaType.STRING },
+                    date: { type: SchemaType.STRING },
+                },
+                required: ["title"],
+            },
+        },
+    },
+    required: ["name", "jobTitle", "summary", "skills", "experience", "education"],
+};
+
 
 // --- ID MERGING HELPER ---
 const mergeIds = (oldArray, newArray) => {
@@ -29,7 +104,7 @@ const mergeIds = (oldArray, newArray) => {
 };
 
 // ------------------------------
-// GENERATE RESUME (MAIN HANDLER)
+// GENERATE RESUME HANDLER
 // ------------------------------
 const generateResumeHandler = async (req, res) => {
     let generatedResumeData = {};
@@ -40,96 +115,60 @@ const generateResumeHandler = async (req, res) => {
         const targetJobTitle = structuredData.jobTitle || "Professional";
 
         if (!structuredData.name?.trim()) {
-            return res
-                .status(400)
-                .json({ msg: "Please enter your Full Name to begin AI generation." });
+            return res.status(400).json({ msg: "Please enter your Full Name." });
         }
 
-        // ----------------------------------------------------
-        // 1. IMPROVED PROMPT: "CREATIVE MODE"
-        // ----------------------------------------------------
+        // 2. CONSTRUCT PROMPT HERE
         const prompt = `
-You are an expert Resume Writer and Career Coach.
-The user is applying for the role of: "${targetJobTitle}".
+            You are an expert Resume Writer.
+            User Role: "${targetJobTitle}".
+            User Data: ${JSON.stringify(structuredData)}
 
-Here is the user's current raw data (which may be incomplete):
-${JSON.stringify(structuredData)}
+            TASK: Generate a high-impact resume.
+            RULES:
+            1. If experience/skills/projects are missing, INVENT realistic, high-quality entries for a ${targetJobTitle}.
+            2. Do not leave array fields empty.
+            3. Use professional action verbs.
+            4. Summary should be 3-4 lines long.
+        `;
 
-**YOUR TASK:**
-Generate a complete, high-impact professional resume in JSON format.
+        // 3. CALL GENERIC SERVICE WITH SPECIFIC SCHEMA
+        const responseText = await generateStructuredData(prompt, resumeSchema);
 
-**CRITICAL RULES FOR MISSING DATA:**
-1. **DO NOT leave fields empty.**
-2. If the user has no Experience, Skills, or Education listed, **YOU MUST HALLUCINATE/INVENT** realistic, high-quality, and impressive entries that would help someone get hired as a "${targetJobTitle}".
-3. **Summary:** Write a compelling professional summary for a ${targetJobTitle}.
-4. **Skills:** List 8-12 relevant hard and soft skills for a ${targetJobTitle}.
-5. **Experience:** If missing, generate 2-3 realistic previous roles (e.g., "Junior ${targetJobTitle}", "Intern") with strong bullet points using action verbs.
-6. **Projects:** If missing, generate 2 impressive projects relevant to ${targetJobTitle}.
-
-**OUTPUT:**
-Return ONLY valid JSON matching the schema.
-`;
-
-        // ----------------------------------------------------
-        // 2. CALL AI SERVICE
-        // ----------------------------------------------------
-        const responseText = await generateFullText(prompt);
-
-        // ----------------------------------------------------
-        // 3. ROBUST JSON PARSING
-        // ----------------------------------------------------
+        // Parsing Logic
         let cleaned = responseText.trim();
-        // Remove markdown code blocks if present (e.g. ```json ... ```)
         cleaned = cleaned.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "");
 
         try {
             generatedResumeData = JSON.parse(cleaned);
         } catch (err) {
-            console.error("JSON parsing failed. Raw text:", responseText);
-            // Fallback: Try to find the first '{' and last '}'
+            // Fallback for messy JSON
             const start = responseText.indexOf("{");
             const end = responseText.lastIndexOf("}");
             if (start !== -1 && end !== -1) {
-                try {
-                    generatedResumeData = JSON.parse(responseText.substring(start, end + 1));
-                } catch (e2) {
-                    return res.status(500).json({
-                        msg: "AI generated invalid data structure. Please try again.",
-                        error: "JSON Parse Error"
-                    });
-                }
+                generatedResumeData = JSON.parse(responseText.substring(start, end + 1));
             } else {
-                return res.status(500).json({
-                    msg: "AI failed to generate a valid resume. Please try again.",
-                    error: "No JSON found"
-                });
+                throw new Error("Invalid JSON structure returned by AI");
             }
         }
 
-        // ----------------------------------------------------
-        // 4. MERGE & FORMAT DATA
-        // ----------------------------------------------------
-        // We prioritize the AI's generated content, but we try to preserve IDs if they match old data
+        // Merge logic
         generatedResumeData.experience = mergeIds(structuredData.experience, generatedResumeData.experience);
         generatedResumeData.education = mergeIds(structuredData.education, generatedResumeData.education);
         generatedResumeData.projects = mergeIds(structuredData.projects, generatedResumeData.projects);
         generatedResumeData.certifications = mergeIds(structuredData.certifications, generatedResumeData.certifications);
 
-        // Ensure user's personal details aren't overwritten by "hallucinations" if they were provided
+        // Preserve user overrides
         if (structuredData.name) generatedResumeData.name = structuredData.name;
         if (structuredData.email) generatedResumeData.email = structuredData.email;
         if (structuredData.phone) generatedResumeData.phone = structuredData.phone;
-        // Allow AI to refine the location/jobTitle if it thinks it's better, or keep user's:
         generatedResumeData.jobTitle = structuredData.jobTitle || generatedResumeData.jobTitle;
 
-        // ----------------------------------------------------
-        // 5. SAVE, SCORE & RETURN
-        // ----------------------------------------------------
+        // Save & Log
         let savedResume = null;
         if (userId) {
-            // Calculate score on the NEW generated data
-            await calculateAndSaveResumeScore(userId, generatedResumeData);
             await logActivity(userId, "resume_generation", `Generated Resume for ${targetJobTitle}`, req);
+            await calculateAndSaveResumeScore(userId, generatedResumeData);
 
             if (structuredData.save) {
                 savedResume = await Resume.create({
@@ -141,13 +180,10 @@ Return ONLY valid JSON matching the schema.
 
         if (structuredData.download) {
             const pdfBuffer = await generateResumePDF(generatedResumeData);
-            const base64 = pdfBuffer.toString("base64");
-            const fileName = `${(generatedResumeData.jobTitle || "Resume").replace(/[^a-z0-9]/gi, "_")}.pdf`;
-
             return res.status(200).json({
-                fileName,
+                fileName: "Resume.pdf",
                 contentType: "application/pdf",
-                base64,
+                base64: pdfBuffer.toString("base64"),
                 resume: generatedResumeData,
                 saved: !!savedResume,
                 resumeId: savedResume?._id || null,
@@ -161,7 +197,7 @@ Return ONLY valid JSON matching the schema.
         });
 
     } catch (error) {
-        console.error("AI Generation Fatal Error:", error);
+        console.error("AI Generation Error:", error);
         return res.status(500).json({
             msg: "AI Generation service failed.",
             error: error.message,
@@ -169,30 +205,18 @@ Return ONLY valid JSON matching the schema.
     }
 };
 
-// SAVE RESUME (UNCHANGED)
 const saveResume = async (req, res) => {
     try {
         const structuredData = req.body;
         const userId = req.user?._id;
+        if (!structuredData || !userId) return res.status(400).json({ msg: "Missing data." });
 
-        if (!structuredData || !userId) {
-            return res.status(400).json({ msg: "Missing data or user not authenticated." });
-        }
-
-        const saved = await Resume.create({
-            user: userId,
-            sections: structuredData
-        });
-
+        const saved = await Resume.create({ user: userId, sections: structuredData });
         await calculateAndSaveResumeScore(userId, structuredData);
-
         res.status(201).json({ msg: "Resume saved.", resumeId: saved._id });
     } catch (err) {
-        res.status(500).json({ msg: "Failed to save resume", error: err.message });
+        res.status(500).json({ msg: "Failed to save", error: err.message });
     }
 };
 
-module.exports = {
-    generateResumeHandler,
-    saveResume,
-};
+module.exports = { generateResumeHandler, saveResume };
