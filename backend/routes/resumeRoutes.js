@@ -8,12 +8,12 @@ const {
     saveResume
 } = require("../controllers/resumeController");
 
-//const { protect } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
 // Generate Resume (AI + PDF option)
-router.post("/generate", generateResumeHandler);
+router.post("/generate", protect, generateResumeHandler);
 
 // Save Resume Manually
-router.post("/save", saveResume);
+router.post("/save", protect, saveResume);
 
 module.exports = router;
