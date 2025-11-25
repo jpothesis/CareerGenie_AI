@@ -1,53 +1,51 @@
-// authMiddleware.js
-
+// middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Ensure correct path to your User model
+const User = require('../models/User');
 
 exports.protect = async (req, res, next) => {
   let token;
 
-  // 1. Check if token exists in the Authorization header
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
-      // Extract the token (Bearer <token>)
       token = req.headers.authorization.split(' ')[1];
+      
+      // [DEBUG] Check what we received
+      console.log("1. Token Received:", token.substring(0, 10) + "..."); 
 
-      // 2. Verify token
+      // [DEBUG] Check if Secret exists
+      if (!process.env.JWT_SECRET) {
+         console.error("CRITICAL: JWT_SECRET is missing in Environment Variables!");
+         return res.status(500).json({ msg: "Server Error: Auth Configuration Missing" });
+      }
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("2. Token Decoded. User ID:", decoded.id);
 
-      // 3. Find user and attach to request object
-      // decoded.id is the ID stored in the JWT payload
       req.user = await User.findById(decoded.id).select('-password');
 
-      // Crucial: Check if the user was actually found in the database
       if (!req.user) {
-        // If token is valid but user was deleted
-        console.error('User not found for token ID:', decoded.id);
+        console.error("3. FAILURE: Token valid, but User ID not found in DB.");
+        console.error("   This happens if you are using a Local Token on a Live DB.");
         return res.status(401).json({ msg: 'Not authorized, user not found' });
       }
-      
-      // ✅ SUCCESS: Log the user ID to confirm authentication works
-      // This is a great debug line to leave in while testing
-      console.log(`[PROTECT] Request authenticated for User ID: ${req.user._id}`); 
 
-      // 4. Continue to the next middleware/route handler
+      console.log("4. SUCCESS: User found:", req.user.email);
       next();
 
     } catch (error) {
-      // Handle JWT-specific errors (Expired, Invalid Signature)
-      console.error("JWT Error:", error);
+      console.error("AUTH ERROR:", error.name, error.message);
       
       if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({ msg: 'Token expired. Please log in again.' });
+        return res.status(401).json({ msg: 'Token expired' });
       }
-      // General JWT verification failure
-      return res.status(401).json({ msg: 'Not authorized, token failed or invalid' });
+      if (error.name === 'JsonWebTokenError') {
+        return res.status(401).json({ msg: 'Invalid Token Signature (Check JWT_SECRET)' });
+      }
+      
+      return res.status(401).json({ msg: 'Not authorized' });
     }
   } else {
-    // No token found in headers
-    return res.status(401).json({ msg: 'Not authorized, no token provided' });
+    console.log("No Token provided in headers");
+    return res.status(401).json({ msg: 'Not authorized, no token' });
   }
 };
