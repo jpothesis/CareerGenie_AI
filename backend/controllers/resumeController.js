@@ -10,10 +10,14 @@ const crypto = require("crypto");
 // --- ID MERGING HELPER ---
 const mergeIds = (oldArray, newArray) => {
     const oldMap = new Map();
-    oldArray.forEach(item => {
-        const key = item.role || item.title || item.id;
-        if (key) oldMap.set(key, item.id);
-    });
+    if (Array.isArray(oldArray)) {
+        oldArray.forEach(item => {
+            const key = item.role || item.title || item.id;
+            if (key) oldMap.set(key, item.id);
+        });
+    }
+
+    if (!Array.isArray(newArray)) return [];
 
     return newArray.map(newItem => {
         const lookupKey = newItem.role || newItem.title;
@@ -33,70 +37,99 @@ const generateResumeHandler = async (req, res) => {
     try {
         const structuredData = req.body;
         const userId = req.user?._id;
+        const targetJobTitle = structuredData.jobTitle || "Professional";
 
-        if (!structuredData.name?.trim() || !structuredData.jobTitle?.trim()) {
+        if (!structuredData.name?.trim()) {
             return res
                 .status(400)
-                .json({ msg: "Please enter your Full Name and desired Job Title to begin AI generation." });
+                .json({ msg: "Please enter your Full Name to begin AI generation." });
         }
 
-        // CLEAN JSON PROMPT
+        // ----------------------------------------------------
+        // 1. IMPROVED PROMPT: "CREATIVE MODE"
+        // ----------------------------------------------------
         const prompt = `
-You are an AI resume generator.
-Return STRICTLY valid JSON. No comments, no explanations, no headings.
-Only return a single JSON object.
-If something is missing, return an empty string instead of text.
-Here is the user input:
+You are an expert Resume Writer and Career Coach.
+The user is applying for the role of: "${targetJobTitle}".
+
+Here is the user's current raw data (which may be incomplete):
 ${JSON.stringify(structuredData)}
+
+**YOUR TASK:**
+Generate a complete, high-impact professional resume in JSON format.
+
+**CRITICAL RULES FOR MISSING DATA:**
+1. **DO NOT leave fields empty.**
+2. If the user has no Experience, Skills, or Education listed, **YOU MUST HALLUCINATE/INVENT** realistic, high-quality, and impressive entries that would help someone get hired as a "${targetJobTitle}".
+3. **Summary:** Write a compelling professional summary for a ${targetJobTitle}.
+4. **Skills:** List 8-12 relevant hard and soft skills for a ${targetJobTitle}.
+5. **Experience:** If missing, generate 2-3 realistic previous roles (e.g., "Junior ${targetJobTitle}", "Intern") with strong bullet points using action verbs.
+6. **Projects:** If missing, generate 2 impressive projects relevant to ${targetJobTitle}.
+
+**OUTPUT:**
+Return ONLY valid JSON matching the schema.
 `;
 
+        // ----------------------------------------------------
+        // 2. CALL AI SERVICE
+        // ----------------------------------------------------
         const responseText = await generateFullText(prompt);
 
         // ----------------------------------------------------
-        // FIX: CLEAN JSON EXTRACTION (Prevents 500 errors)
+        // 3. ROBUST JSON PARSING
         // ----------------------------------------------------
         let cleaned = responseText.trim();
-
-        const start = cleaned.indexOf("{");
-        const end = cleaned.lastIndexOf("}");
-
-        if (start === -1 || end === -1) {
-            console.error("Gemini returned NO JSON:", responseText);
-            return res.status(500).json({
-                msg: "AI returned no JSON. Try again.",
-                error: "Invalid JSON format",
-            });
-        }
-
-        cleaned = cleaned.substring(start, end + 1);
+        // Remove markdown code blocks if present (e.g. ```json ... ```)
+        cleaned = cleaned.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "");
 
         try {
             generatedResumeData = JSON.parse(cleaned);
         } catch (err) {
-            console.error("JSON parsing failed AFTER extraction:", cleaned);
-            return res.status(500).json({
-                msg: "AI response had invalid JSON structure.",
-                error: err.message,
-            });
+            console.error("JSON parsing failed. Raw text:", responseText);
+            // Fallback: Try to find the first '{' and last '}'
+            const start = responseText.indexOf("{");
+            const end = responseText.lastIndexOf("}");
+            if (start !== -1 && end !== -1) {
+                try {
+                    generatedResumeData = JSON.parse(responseText.substring(start, end + 1));
+                } catch (e2) {
+                    return res.status(500).json({
+                        msg: "AI generated invalid data structure. Please try again.",
+                        error: "JSON Parse Error"
+                    });
+                }
+            } else {
+                return res.status(500).json({
+                    msg: "AI failed to generate a valid resume. Please try again.",
+                    error: "No JSON found"
+                });
+            }
         }
 
         // ----------------------------------------------------
-        // MERGE USERS' EXISTING IDs
+        // 4. MERGE & FORMAT DATA
         // ----------------------------------------------------
-        generatedResumeData.experience = mergeIds(structuredData.experience || [], generatedResumeData.experience || []);
-        generatedResumeData.education = mergeIds(structuredData.education || [], generatedResumeData.education || []);
-        generatedResumeData.projects = mergeIds(structuredData.projects || [], generatedResumeData.projects || []);
-        generatedResumeData.certifications = mergeIds(structuredData.certifications || [], generatedResumeData.certifications || []);
+        // We prioritize the AI's generated content, but we try to preserve IDs if they match old data
+        generatedResumeData.experience = mergeIds(structuredData.experience, generatedResumeData.experience);
+        generatedResumeData.education = mergeIds(structuredData.education, generatedResumeData.education);
+        generatedResumeData.projects = mergeIds(structuredData.projects, generatedResumeData.projects);
+        generatedResumeData.certifications = mergeIds(structuredData.certifications, generatedResumeData.certifications);
 
-        // Ensure simple arrays
-        generatedResumeData.skills = Array.isArray(generatedResumeData.skills) ? generatedResumeData.skills : [];
-        generatedResumeData.languages = Array.isArray(generatedResumeData.languages) ? generatedResumeData.languages : [];
+        // Ensure user's personal details aren't overwritten by "hallucinations" if they were provided
+        if (structuredData.name) generatedResumeData.name = structuredData.name;
+        if (structuredData.email) generatedResumeData.email = structuredData.email;
+        if (structuredData.phone) generatedResumeData.phone = structuredData.phone;
+        // Allow AI to refine the location/jobTitle if it thinks it's better, or keep user's:
+        generatedResumeData.jobTitle = structuredData.jobTitle || generatedResumeData.jobTitle;
 
-        // LOGGING + SCORING + SAVING
+        // ----------------------------------------------------
+        // 5. SAVE, SCORE & RETURN
+        // ----------------------------------------------------
         let savedResume = null;
         if (userId) {
-            await logActivity(userId, "resume_generation", "Generated AI Resume", req);
+            // Calculate score on the NEW generated data
             await calculateAndSaveResumeScore(userId, generatedResumeData);
+            await logActivity(userId, "resume_generation", `Generated Resume for ${targetJobTitle}`, req);
 
             if (structuredData.save) {
                 savedResume = await Resume.create({
@@ -106,16 +139,10 @@ ${JSON.stringify(structuredData)}
             }
         }
 
-        // PDF DOWNLOAD LOGIC
         if (structuredData.download) {
             const pdfBuffer = await generateResumePDF(generatedResumeData);
             const base64 = pdfBuffer.toString("base64");
-
-            const fileName = `${
-                generatedResumeData.jobTitle
-                    ? generatedResumeData.jobTitle.replace(/[^a-z0-9]/gi, "_")
-                    : "AI"
-            }_Resume.pdf`;
+            const fileName = `${(generatedResumeData.jobTitle || "Resume").replace(/[^a-z0-9]/gi, "_")}.pdf`;
 
             return res.status(200).json({
                 fileName,
@@ -127,7 +154,6 @@ ${JSON.stringify(structuredData)}
             });
         }
 
-        // FINAL RESPONSE (ALWAYS RETURN resume)
         return res.status(200).json({
             resume: generatedResumeData,
             saved: !!savedResume,
@@ -135,9 +161,9 @@ ${JSON.stringify(structuredData)}
         });
 
     } catch (error) {
-        console.error("AI Generation Fatal Error:", error.message);
+        console.error("AI Generation Fatal Error:", error);
         return res.status(500).json({
-            msg: "AI Generation service failed. Please check your API Key and network.",
+            msg: "AI Generation service failed.",
             error: error.message,
         });
     }

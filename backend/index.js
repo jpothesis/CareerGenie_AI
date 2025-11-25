@@ -26,14 +26,12 @@ const app = express();
 connectDB();
 
 // Middleware
-<<<<<<< HEAD
-app.use(cors({ origin: "*", credentials: true }));
-=======
+
 app.use(cors({
   origin: ["https://career-genie-ai.vercel.app", "http://localhost:5173"],
   credentials: true,
 }));
->>>>>>> 0010eb1f41ce77b4f2fb584a8030026940436db5
+
 app.use(express.json());
 
 // API Routes
