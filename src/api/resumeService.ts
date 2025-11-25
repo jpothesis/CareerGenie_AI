@@ -1,5 +1,5 @@
 // src/api/resumeService.ts
-import api from "./resumeApi";
+import api from "./api";
 import type { ResumeData } from "../components/resume";
 import axios, { type AxiosResponse } from "axios";
 
