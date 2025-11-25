@@ -1,13 +1,19 @@
-import api from "./api"; // Import the central, fixed API helper
-
+// src/api/resumeService.ts
+import api from "./api"; // ✅ Correct import of the interceptor
 
 const API_URL = "/resume";
 
-// --- RESUME API ENDPOINTS ---
-
-export const generateResume = async (data: any) => {
-  const res = await api.post(`${API_URL}/generate`, data);
-  return res.data;
+// ✅ Rename this to match what ResumeBuilder expects
+export const fetchAIGeneratedData = async (data: any) => {
+  try {
+    const res = await api.post(`${API_URL}/generate`, data);
+    
+    // ✅ CRITICAL FIX: The backend returns { resume: {...}, saved: boolean }
+    // We must return ONLY the resume object to the frontend state
+    return res.data.resume; 
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const saveResume = async (data: any) => {
@@ -22,7 +28,7 @@ export const getResumeHistory = async () => {
 
 export const downloadResume = async (data: any) => {
   const res = await api.post(`${API_URL}/download`, data, {
-    responseType: "blob", // Important for PDF downloads
+    responseType: "blob",
   });
   return res.data;
 };
