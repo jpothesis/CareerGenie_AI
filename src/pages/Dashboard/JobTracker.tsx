@@ -44,10 +44,22 @@ const JobTracker = () => {
 
   const loadJobs = async () => {
     try {
-      const { data } = await fetchJobs();
-      setJobs(data.jobs);
+      const response = await fetchJobs();
+      console.log(" JobTracker API Response:", response); 
+
+      const data = response.data;
+      
+      if (Array.isArray(data)) {
+        setJobs(data);
+      } else if (data && Array.isArray(data.jobs)) {
+        setJobs(data.jobs);
+      } else {
+        console.warn("⚠️ Unexpected data format:", data);
+        setJobs([]);
+      }
     } catch (error) {
-      console.error("Failed to fetch jobs", error);
+      console.error(" Failed to fetch jobs", error);
+      setJobs([]); // Prevent crash on error
     }
   };
 
@@ -91,7 +103,9 @@ const JobTracker = () => {
     }
   };
 
-  const filteredJobs = jobs.filter((job) => {
+  const safeJobs = Array.isArray(jobs) ? jobs : [];
+
+  const filteredJobs = safeJobs.filter((job) => {
     const statusMatch = filter === "All" || job.status === filter;
     const companyMatch =
       companyFilter.trim() === "" ||

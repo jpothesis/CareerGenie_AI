@@ -1,4 +1,3 @@
-// src/api/api.ts
 import axios from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 
@@ -12,18 +11,21 @@ const getBaseUrl = () => {
 };
 
 const api = axios.create({
-  baseURL: getBaseUrl(), // Change if backend URL differs
+  baseURL: getBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+// Attach JWT token automatically to all requests
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem("jwttoken");
     if (token) {
       config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
+      if (!config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },

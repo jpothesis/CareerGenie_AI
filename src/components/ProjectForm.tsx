@@ -41,16 +41,19 @@ export const ProjectForm = ({ projects, setProjects }: Props) => {
         .filter((tech) => tech !== "");
 
       setProjects([...projects, { ...form, techStack: techArray }]);
+
+      // Reset form
       setForm({ title: "", description: "", techStack: [], link: "" });
       setTechInput("");
     }
   };
 
   return (
-    <div className="space-y-2 mt-4">
+    <div className="space-y-3 mt-4">
       <h2 className="text-white font-semibold text-lg">📁 Projects</h2>
 
       <input
+        id="project-title"
         type="text"
         placeholder="Project Title"
         value={form.title}
@@ -59,13 +62,16 @@ export const ProjectForm = ({ projects, setProjects }: Props) => {
       />
 
       <textarea
+        id="project-description"
         placeholder="Project Description"
         value={form.description}
         onChange={(e) => setForm({ ...form, description: e.target.value })}
+        rows={4}
         className={textareaStyle}
       />
 
       <input
+        id="project-tech"
         type="text"
         placeholder="Tech Stack (comma-separated)"
         value={techInput}
@@ -74,6 +80,7 @@ export const ProjectForm = ({ projects, setProjects }: Props) => {
       />
 
       <input
+        id="project-link"
         type="text"
         placeholder="Project Link (GitHub, Live, etc.)"
         value={form.link}
@@ -82,6 +89,7 @@ export const ProjectForm = ({ projects, setProjects }: Props) => {
       />
 
       <Button
+        type="button"
         onClick={handleAddProject}
         className="bg-gradient-to-r from-yellow-400 to-pink-500 text-white mt-2"
       >
