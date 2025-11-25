@@ -11,7 +11,7 @@ const {
 } = require("../controllers/interviewController");
 
 // Start a new interview
-router.post("/start", , startInterview);
+router.post("/start", startInterview);
 
 // Submit an answer and stream feedback
 router.post("/answer/:sessionId",  submitAnswer);
