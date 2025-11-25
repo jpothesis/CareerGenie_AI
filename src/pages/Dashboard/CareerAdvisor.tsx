@@ -54,7 +54,7 @@ const CareerAdvisor = () => {
     >
       <div className="max-w-4xl mx-auto backdrop-blur-md p-6 rounded-2xl border border-orange-500/20 bg-[#1a1a1a]/70">
         <h1 className="text-4xl font-extrabold mb-6 text-center bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-transparent bg-clip-text">
-          🚀 AI Career Advisor
+          AI Career Advisor
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
