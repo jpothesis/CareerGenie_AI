@@ -8,7 +8,7 @@ if (!process.env.GEMINI_API_KEY) {
 
 let genAI = null;
 let model = null;
-// gemini-2.5-flash is excellent for speed and structured data
+// Use flash model for speed
 const MODEL_NAME = "gemini-2.5-flash"; 
 
 try {
@@ -22,7 +22,7 @@ try {
   console.error("❌ Error initializing Gemini:", err.message);
 }
 
-// --- 1. STRUCTURED DATA GENERATOR (For Resumes & Roadmaps) ---
+// --- 1. STRUCTURED DATA (JSON) ---
 const generateStructuredData = async (prompt, responseSchema) => {
   if (!model) return JSON.stringify({ error: "AI Service Unavailable" });
 
@@ -43,10 +43,8 @@ const generateStructuredData = async (prompt, responseSchema) => {
     return result.response.text();
   } catch (error) {
     console.error("❌ GEMINI JSON ERROR:", error.message);
-    
-    // Retry logic: If strict schema fails, try loose JSON generation
+    // Retry logic
     if (error.message.includes("generationConfig")) {
-        console.log("🔄 Retrying without strict schema...");
         try {
             const retryResult = await model.generateContent({
                 contents: [{ role: "user", parts: [{ text: prompt + " \nReturn strictly valid JSON." }] }]
@@ -56,11 +54,11 @@ const generateStructuredData = async (prompt, responseSchema) => {
             console.error("Retry failed:", retryErr.message);
         }
     }
-    throw new Error("AI Generation Failed");
+    throw error;
   }
 };
 
-// --- 2. TEXT GENERATOR (For Career Advice & Chat) ---
+// --- 2. PLAIN TEXT (For Questions/Chat) ---
 const generateText = async (prompt) => {
   if (!model) return "AI Service Unavailable. Please check your API Key.";
 
@@ -71,11 +69,11 @@ const generateText = async (prompt) => {
     return result.response.text();
   } catch (error) {
     console.error("❌ GEMINI TEXT ERROR:", error.message);
-    return "Error: Unable to generate response.";
+    throw error;
   }
 };
 
-// --- 3. STREAM GENERATOR (For Real-time Interviews) ---
+// --- 3. STREAMING TEXT (For Live Feedback) ---
 const generateStream = async function* (prompt) {
     if (!model) {
         yield "AI Service Unavailable.";

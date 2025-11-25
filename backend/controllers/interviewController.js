@@ -1,9 +1,12 @@
 // controllers/interviewController.js
+
 const logActivity = require('../utils/activityLogger');
 const InterviewSession = require("../models/InterviewSession");
-const { generateTextStream, generateFullText } = require("../services/geminiService");
+// ✅ FIX: Import the correct functions from the new generic service
+const { generateStream, generateText } = require("../services/geminiService"); 
 const { saveInterviewAttemptScore } = require("../services/interviewAttemptService");
 
+// --- PROMPT BUILDERS ---
 function buildQuestionPrompt({ role, seniority, jdText, resumeText, askedSoFar, previousAnswers, nextIndex }) {
   return `
 You are acting as an interviewer for a ${seniority} ${role} position.
@@ -56,7 +59,8 @@ Provide:
 `;
 }
 
-//  CORRECTION: Changed from exports.startInterview to const startInterview
+// --- CONTROLLER FUNCTIONS ---
+
 const startInterview = async (req, res, next) => {
   try {
     const { role, seniority = "junior", numQuestions = 8, jdText = "", resumeText = "" } = req.body;
@@ -72,7 +76,8 @@ const startInterview = async (req, res, next) => {
       turns: [],
     });
 
-    const question = await generateFullText(
+    // ✅ FIX: Use generateText
+    const question = await generateText(
       buildQuestionPrompt({
         role, seniority, jdText, resumeText,
         askedSoFar: [], previousAnswers: [], nextIndex: 0
@@ -85,16 +90,15 @@ const startInterview = async (req, res, next) => {
 
     res.status(201).json({ sessionId: session._id, question });
   } catch (err) {
-    next(err);
+    console.error("Start Interview Error:", err);
+    res.status(500).json({ message: "Failed to start interview", error: err.message });
   }
 };
 
-// submitAnswer with SSE
 const submitAnswer = async (req, res, next) => {
   const { sessionId } = req.params;
   const { answerText } = req.body;
 
-  // SSE setup
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
@@ -129,25 +133,24 @@ const submitAnswer = async (req, res, next) => {
 
     let feedbackFull = "";
 
-    for await (const chunk of generateTextStream(fbPrompt)) {
+    // ✅ FIX: Use generateStream
+    for await (const chunk of generateStream(fbPrompt)) {
       feedbackFull += chunk;
       res.write(`data: ${JSON.stringify({ delta: chunk })}\n\n`);
       res.flush?.();
     }
 
-    // Extract score
     const scoreMatch = feedbackFull.match(/Score:\s*([0-9]{1,2})/i);
     turn.feedback = feedbackFull.trim();
     turn.score = scoreMatch ? Math.min(10, Math.max(0, parseInt(scoreMatch[1], 10))) : null;
     await session.save();
 
-    // Determine if this is the last question
     const isDone = session.turns.length >= session.numQuestions;
 
-    // Auto next question
     if (!isDone) {
       const nextIndex = turn.index + 1;
-      const nextQ = await generateFullText(
+      // ✅ FIX: Use generateText
+      const nextQ = await generateText(
         buildQuestionPrompt({
           role: session.role,
           seniority: session.seniority,
@@ -163,17 +166,16 @@ const submitAnswer = async (req, res, next) => {
       await session.save();
       res.write(`data: ${JSON.stringify({ nextQuestion: nextQ })}\n\n`);
     } else {
-      //  If the interview is done, signal the client
       res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     }
   } catch (err) {
+    console.error("Submit Answer Error:", err);
     res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
   } finally {
     res.end();
   }
 };
 
-// endInterview
 const endInterview = async (req, res, next) => {
     try {
         const { sessionId } = req.params;
@@ -182,55 +184,46 @@ const endInterview = async (req, res, next) => {
         const session = await InterviewSession.findOne({ _id: sessionId, user: userId });
         if (!session) return res.status(404).json({ message: "Session not found" });
 
-        // Calculate Average Score (Scale 0-10)
         const scoredTurns = session.turns.filter(t => t.score !== null);
         
-        if (scoredTurns.length === 0) {
-             return res.status(400).json({ message: "No scores recorded for this session." });
+        let finalScoreOutOfFive = 0;
+        if (scoredTurns.length > 0) {
+            const totalScore = scoredTurns.reduce((sum, turn) => sum + turn.score, 0);
+            const sessionAverageScore = totalScore / scoredTurns.length; 
+            finalScoreOutOfFive = (sessionAverageScore / 2).toFixed(1);
         }
-        
-        const totalScore = scoredTurns.reduce((sum, turn) => sum + turn.score, 0);
-        // Calculate the average score out of 10
-        const sessionAverageScore = totalScore / scoredTurns.length; 
-        
-        // Convert to 0-5 scale for the InterviewAttempt model (as per dashboard card)
-        const finalScoreOutOfFive = (sessionAverageScore / 2).toFixed(1);
 
-        //  Save the final result to the InterviewAttempt model
         await saveInterviewAttemptScore(userId, finalScoreOutOfFive, session.role, sessionId);
         
-        //  Log the activity
         await logActivity(
           userId, 
           'ai_interview', 
           `Completed Mock Interview for ${session.role} (Score: ${finalScoreOutOfFive}/5)`, 
           req
-      );
+        );
 
-        // Optionally update the session status to 'completed'
         session.status = 'completed';
         await session.save();
 
         res.json({ 
-            message: "Interview finalized and score saved.", 
-            finalScore: parseFloat(finalScoreOutOfFive) // Return the 0-5 score
+            message: "Interview finalized.", 
+            finalScore: parseFloat(finalScoreOutOfFive) 
         });
 
     } catch (err) {
         console.error("Error finalizing interview:", err.message);
-        next(err);
+        res.status(500).json({ message: "Failed to end interview", error: err.message });
     }
 };
 
-
-// summary generation
 const getSummary = async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     const session = await InterviewSession.findOne({ _id: sessionId, user: req.user._id });
     if (!session) return res.status(404).json({ message: "Session not found" });
 
-    const summary = await generateFullText(
+    // ✅ FIX: Use generateText
+    const summary = await generateText(
       buildSummaryPrompt({
         role: session.role,
         seniority: session.seniority,
@@ -240,7 +233,7 @@ const getSummary = async (req, res, next) => {
     
     res.json({ summary });
   } catch (err) {
-    next(err);
+    res.status(500).json({ message: "Failed to get summary", error: err.message });
   }
 };
 
