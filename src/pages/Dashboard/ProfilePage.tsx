@@ -8,6 +8,7 @@ import { FaUserEdit, FaSave, FaSpinner } from "react-icons/fa";
 import ProfilePreview from "../../components/ProfilePreview";
 import ProfileForm from "../../components/ProfileForm";
 import placeholderImage from "../../assets/profile-placeholder.png";
+import { useNavigate } from "react-router-dom";
 
 
 interface FormState {
@@ -44,6 +45,7 @@ const coolButtonClasses = "w-full py-3 text-lg font-bold rounded-lg transition-a
 const cardClasses = "bg-[#1a1a1a]/80 p-6 rounded-xl border border-orange-500/20 shadow-xl transition-all duration-500 hover:shadow-orange-500/30";
 
 const ProfilePage: React.FC = () => {
+  const navigate = useNavigate(); 
   const [form, setForm] = useState<FormState>(initialFormState);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -79,7 +81,7 @@ const ProfilePage: React.FC = () => {
       }
     };
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     messageRef.current?.scrollIntoView({ behavior: "smooth" });

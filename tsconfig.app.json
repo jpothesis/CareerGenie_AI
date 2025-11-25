@@ -32,7 +32,7 @@
     },
 
     /* React + Node type support */
-    // Removed "ignoreDeprecations": "6.0" as it caused an error.
+    "ignoreDeprecations": "6.0",
     "types": ["react", "react-dom", "node"]
   },
   "include": ["src", "components"]
